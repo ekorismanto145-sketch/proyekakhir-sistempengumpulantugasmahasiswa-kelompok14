@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* VARIABLE WARNA DEFAULT (DARK MODE) */
         :root {
             --bg-darkbg: #0B1120;
             --bg-surface: #151E32;
@@ -18,17 +17,18 @@
             --hover-bg: #1f2937;
         }
 
-        /* VARIABLE WARNA JIKA MODE TERANG DIAKTIFKAN */
         html.light-mode {
-            --bg-darkbg: #f3f4f6; /* Abu-abu sangat terang */
-            --bg-surface: #ffffff; /* Putih bersih */
+            --bg-darkbg: #f3f4f6; 
+            --bg-surface: #ffffff; 
             --border-color: #e5e7eb;
-            --text-main: #111827; /* Hitam gelap */
             --text-muted: #6b7280;
             --hover-bg: #f3f4f6;
         }
 
+<<<<<<< HEAD
         /* OVERRIDE CLASS TAILWIND AGAR OTOMATIS BERUBAH WARNA */
+=======
+>>>>>>> a4b0528 (Prepare app for Railway deployment)
         html.light-mode .text-white { color: var(--text-main) !important; }
         html.light-mode .text-gray-300, html.light-mode .text-gray-400, html.light-mode .text-gray-500 { color: var(--text-muted) !important; }
         html.light-mode .border-gray-800, html.light-mode .border-gray-700 { border-color: var(--border-color) !important; }
@@ -38,7 +38,10 @@
         .dropdown-menu { display: none; }
         .dropdown-menu.active { display: block; }
 
+<<<<<<< HEAD
         /* Responsif global */
+=======
+>>>>>>> a4b0528 (Prepare app for Railway deployment)
         * { box-sizing: border-box; }
         body { overflow-x: hidden; }
         img, video, canvas, svg { max-width: 100%; height: auto; }
@@ -46,7 +49,10 @@
     </style>
 
     <script>
+<<<<<<< HEAD
         // Set konfigurasi Tailwind untuk mengambil warna dari CSS Variable
+=======
+>>>>>>> a4b0528 (Prepare app for Railway deployment)
         tailwind.config = {
             theme: {
                 extend: {
@@ -59,11 +65,15 @@
             }
         }
 
+<<<<<<< HEAD
         // Cek LocalStorage: Apakah user sebelumnya memilih Mode Terang?
+=======
+>>>>>>> a4b0528 (Prepare app for Railway deployment)
         if(localStorage.getItem('theme') === 'light'){
             document.documentElement.classList.add('light-mode');
         }
 
+<<<<<<< HEAD
         // Fungsi Tombol Switch Tema
         function toggleTheme() {
             if(document.documentElement.classList.contains('light-mode')) {
@@ -72,6 +82,15 @@
             } else {
                 document.documentElement.classList.add('light-mode');
                 localStorage.setItem('theme', 'light'); // Simpan pilihan Terang
+=======
+        function toggleTheme() {
+            if(document.documentElement.classList.contains('light-mode')) {
+                document.documentElement.classList.remove('light-mode');
+                localStorage.setItem('theme', 'dark'); 
+            } else {
+                document.documentElement.classList.add('light-mode');
+                localStorage.setItem('theme', 'light'); 
+>>>>>>> a4b0528 (Prepare app for Railway deployment)
             }
         }
     </script>

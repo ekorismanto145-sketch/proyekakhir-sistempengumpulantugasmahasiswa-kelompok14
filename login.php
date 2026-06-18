@@ -1,10 +1,7 @@
 <?php 
 include __DIR__ . '/includes/db.php'; 
 
-// Gunakan timestamp integer dari PHP untuk konsistensi
 $current_time = time();
-
-// Hapus data lama (lebih dari 1 jam)
 $conn->query("DELETE FROM login_attempts WHERE blocked_until_ts IS NOT NULL AND blocked_until_ts < " . ($current_time - 3600));
 $conn->query("DELETE FROM login_attempts WHERE attempt_time < DATE_SUB(NOW(), INTERVAL 1 HOUR) AND blocked_until_ts IS NULL");
 
@@ -22,7 +19,6 @@ if (isset($_POST['login'])) {
     if (empty($email) || empty($password)) {
         $error_msg = "Email dan password harus diisi!";
     } else {
-        // Cek data percobaan
         $stmt = $conn->prepare("SELECT fail_count, block_level, blocked_until_ts FROM login_attempts WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -34,7 +30,6 @@ if (isset($_POST['login'])) {
         $is_blocked = false;
         $remaining_seconds = 0;
 
-        // Periksa blokir
         if ($row && !empty($row['blocked_until_ts']) && $row['blocked_until_ts'] > $now) {
             $is_blocked = true;
             $remaining_seconds = $row['blocked_until_ts'] - $now;
@@ -49,7 +44,6 @@ if (isset($_POST['login'])) {
                 $error_msg = "Terlalu banyak percobaan gagal. Coba lagi setelah {$seconds} detik.";
             }
         } else {
-            // Verifikasi login
             $stmt = $conn->prepare("SELECT id, nama, email, `PASSWORD` AS password, `ROLE` AS role, foto_profil FROM users WHERE email = ?");
             $stmt->bind_param("s", $email);
             $stmt->execute();
@@ -57,7 +51,6 @@ if (isset($_POST['login'])) {
             $stmt->close();
 
             if ($user && password_verify($password, $user['password'])) {
-                // Login sukses, hapus percobaan
                 $del = $conn->prepare("DELETE FROM login_attempts WHERE email = ?");
                 $del->bind_param("s", $email);
                 $del->execute();
@@ -68,7 +61,6 @@ if (isset($_POST['login'])) {
                 header("Location: index.php");
                 exit();
             } else {
-                // Login gagal
                 $fail_count = ($row ? $row['fail_count'] : 0) + 1;
                 $block_level = $row ? $row['block_level'] : 0;
                 $blocked_until_ts = null;
@@ -84,7 +76,6 @@ if (isset($_POST['login'])) {
                     $error_msg = "Email atau password salah!";
                 }
 
-                // Simpan data ke database
                 if ($row) {
                     $update = $conn->prepare("UPDATE login_attempts SET fail_count = ?, block_level = ?, blocked_until_ts = ? WHERE email = ?");
                     $update->bind_param("iiis", $fail_count, $block_level, $blocked_until_ts, $email);
@@ -183,4 +174,8 @@ if (isset($_POST['login'])) {
         applyTheme(currentTheme);
     </script>
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> a4b0528 (Prepare app for Railway deployment)

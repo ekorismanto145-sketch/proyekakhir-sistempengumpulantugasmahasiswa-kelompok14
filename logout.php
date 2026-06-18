@@ -1,10 +1,8 @@
 <?php
-// Mulai session jika belum
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Hapus semua data session
 $_SESSION = array();
 
 if (ini_get("session.use_cookies")) {

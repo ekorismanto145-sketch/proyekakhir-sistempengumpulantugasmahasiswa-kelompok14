@@ -1,0 +1,8 @@
+.git
+.idea
+.vscode
+node_modules
+*.log
+*.tmp
+Thumbs.db
+desktop.ini
