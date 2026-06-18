@@ -11,37 +11,95 @@
         :root {
             --bg-darkbg: #0B1120;
             --bg-surface: #151E32;
+            --bg-surface-2: #1B2540;
             --border-color: #1f2937;
             --text-main: #ffffff;
+            --text-heading: #ffffff;
+            --text-body: #e5e7eb;
             --text-muted: #9ca3af;
+            --input-bg: #0f172a;
+            --input-border: #374151;
             --hover-bg: #1f2937;
+            --shadow-soft: 0 10px 30px rgba(2, 6, 23, 0.30);
         }
 
         html.light-mode {
-            --bg-darkbg: #f3f4f6; 
-            --bg-surface: #ffffff; 
-            --border-color: #e5e7eb;
-            --text-muted: #6b7280;
-            --hover-bg: #f3f4f6;
+            --bg-darkbg: #f4f7fb;
+            --bg-surface: #ffffff;
+            --bg-surface-2: #f8fafc;
+            --border-color: #d7e0ea;
+            --text-main: #0f172a;
+            --text-heading: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
+            --hover-bg: #e8edf4;
+            --shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.08);
         }
 
-<<<<<<< HEAD
-        /* OVERRIDE CLASS TAILWIND AGAR OTOMATIS BERUBAH WARNA */
-=======
->>>>>>> a4b0528 (Prepare app for Railway deployment)
-        html.light-mode .text-white { color: var(--text-main) !important; }
-        html.light-mode .text-gray-300, html.light-mode .text-gray-400, html.light-mode .text-gray-500 { color: var(--text-muted) !important; }
-        html.light-mode .border-gray-800, html.light-mode .border-gray-700 { border-color: var(--border-color) !important; }
-        html.light-mode .bg-gray-800 { background-color: var(--hover-bg) !important; }
+        body {
+            background-color: var(--bg-darkbg);
+            color: var(--text-main);
+        }
+
+        .bg-darkbg { background-color: var(--bg-darkbg) !important; }
+        .bg-surface { background-color: var(--bg-surface) !important; }
+        .bg-surface-2 { background-color: var(--bg-surface-2) !important; }
+        .text-main { color: var(--text-main) !important; }
+        .text-heading { color: var(--text-heading) !important; }
+        .text-body { color: var(--text-body) !important; }
+        .text-muted { color: var(--text-muted) !important; }
+        .shadow-soft { box-shadow: var(--shadow-soft) !important; }
+
+        html.light-mode .text-white { color: var(--text-heading) !important; }
+        html.light-mode .text-gray-100 { color: var(--text-heading) !important; }
+        html.light-mode .text-gray-200,
+        html.light-mode .text-gray-300,
+        html.light-mode .text-gray-400,
+        html.light-mode .text-gray-500 { color: var(--text-muted) !important; }
+        html.light-mode .border-gray-800,
+        html.light-mode .border-gray-700 { border-color: var(--border-color) !important; }
+        html.light-mode .bg-gray-800,
+        html.light-mode .bg-gray-900 { background-color: var(--hover-bg) !important; }
+        html.light-mode .bg-darkbg { background-color: var(--bg-darkbg) !important; }
+        html.light-mode .bg-surface { background-color: var(--bg-surface) !important; }
+        html.light-mode .bg-surface-2 { background-color: var(--bg-surface-2) !important; }
+        html.light-mode .bg-surface\/50 { background-color: rgba(255, 255, 255, 0.72) !important; }
+        html.light-mode .bg-darkbg\/70 { background-color: rgba(248, 250, 252, 0.82) !important; }
+        html.light-mode .bg-blue-500\/15 { background-color: rgba(37, 99, 235, 0.10) !important; }
+        html.light-mode .bg-yellow-500\/15 { background-color: rgba(234, 179, 8, 0.12) !important; }
+        html.light-mode .bg-red-500\/10 { background-color: rgba(239, 68, 68, 0.10) !important; }
+        html.light-mode .text-blue-400 { color: #2563eb !important; }
+        html.light-mode .text-yellow-400 { color: #ca8a04 !important; }
+        html.light-mode .text-red-500 { color: #dc2626 !important; }
+        html.light-mode .text-purple-400 { color: #7c3aed !important; }
+        html.light-mode .text-green-500 { color: #16a34a !important; }
+        html.light-mode input,
+        html.light-mode select,
+        html.light-mode textarea {
+            background-color: var(--input-bg) !important;
+            border-color: var(--input-border) !important;
+            color: var(--text-heading) !important;
+        }
+        html.light-mode input::placeholder,
+        html.light-mode textarea::placeholder {
+            color: var(--text-muted) !important;
+        }
+        html.light-mode button:hover {
+            filter: brightness(0.985);
+        }
+        html.light-mode .shadow-md,
+        html.light-mode .shadow-xl,
+        html.light-mode .shadow-2xl,
+        html.light-mode .shadow-lg {
+            box-shadow: var(--shadow-soft) !important;
+        }
         
         .sidebar-transition { transition: transform 0.3s ease-in-out; }
         .dropdown-menu { display: none; }
         .dropdown-menu.active { display: block; }
 
-<<<<<<< HEAD
-        /* Responsif global */
-=======
->>>>>>> a4b0528 (Prepare app for Railway deployment)
         * { box-sizing: border-box; }
         body { overflow-x: hidden; }
         img, video, canvas, svg { max-width: 100%; height: auto; }
@@ -49,10 +107,6 @@
     </style>
 
     <script>
-<<<<<<< HEAD
-        // Set konfigurasi Tailwind untuk mengambil warna dari CSS Variable
-=======
->>>>>>> a4b0528 (Prepare app for Railway deployment)
         tailwind.config = {
             theme: {
                 extend: {
@@ -65,32 +119,19 @@
             }
         }
 
-<<<<<<< HEAD
-        // Cek LocalStorage: Apakah user sebelumnya memilih Mode Terang?
-=======
->>>>>>> a4b0528 (Prepare app for Railway deployment)
-        if(localStorage.getItem('theme') === 'light'){
+        if(localStorage.getItem('theme') === 'light' || localStorage.getItem('login_theme') === 'light'){
             document.documentElement.classList.add('light-mode');
         }
 
-<<<<<<< HEAD
-        // Fungsi Tombol Switch Tema
         function toggleTheme() {
             if(document.documentElement.classList.contains('light-mode')) {
                 document.documentElement.classList.remove('light-mode');
-                localStorage.setItem('theme', 'dark'); // Simpan pilihan Gelap
+                localStorage.setItem('theme', 'dark');
+                localStorage.setItem('login_theme', 'dark');
             } else {
                 document.documentElement.classList.add('light-mode');
-                localStorage.setItem('theme', 'light'); // Simpan pilihan Terang
-=======
-        function toggleTheme() {
-            if(document.documentElement.classList.contains('light-mode')) {
-                document.documentElement.classList.remove('light-mode');
-                localStorage.setItem('theme', 'dark'); 
-            } else {
-                document.documentElement.classList.add('light-mode');
-                localStorage.setItem('theme', 'light'); 
->>>>>>> a4b0528 (Prepare app for Railway deployment)
+                localStorage.setItem('theme', 'light');
+                localStorage.setItem('login_theme', 'light');
             }
         }
     </script>

@@ -145,7 +145,7 @@ if (isset($_POST['login'])) {
             en: { title: "MY TASK", subtitle: "Login to assignment system", emailLabel: "Email", passLabel: "Password", loginBtn: "Login", registerText: "Don't have an account? ", registerLink: "Register here", errorDefault: "Invalid email or password!" }
         };
         let currentLang = localStorage.getItem('login_lang') || 'id';
-        let currentTheme = localStorage.getItem('login_theme') || 'dark';
+        let currentTheme = localStorage.getItem('theme') || localStorage.getItem('login_theme') || 'dark';
         function applyLanguage(lang) {
             const t = translations[lang];
             document.getElementById('appTitle').innerText = t.title;
@@ -166,6 +166,7 @@ if (isset($_POST['login'])) {
                 document.body.classList.remove('light'); document.body.classList.add('dark');
                 document.querySelector('#themeToggle i').classList.remove('fa-sun'); document.querySelector('#themeToggle i').classList.add('fa-moon');
             }
+            localStorage.setItem('theme', theme);
             localStorage.setItem('login_theme', theme);
         }
         document.getElementById('langToggle').addEventListener('click', () => { currentLang = (currentLang === 'id') ? 'en' : 'id'; applyLanguage(currentLang); });
@@ -174,8 +175,4 @@ if (isset($_POST['login'])) {
         applyTheme(currentTheme);
     </script>
 </body>
-<<<<<<< HEAD
 </html>
-=======
-</html>
->>>>>>> a4b0528 (Prepare app for Railway deployment)

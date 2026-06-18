@@ -127,6 +127,10 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
     <div class="flex items-center space-x-2 md:space-x-4">
         <!-- Toggle Bahasa Dropdown -->
         <?php $currentLang = $_SESSION['lang'] ?? 'id'; ?>
+        <button id="themeToggleBtn" type="button" onclick="toggleTheme()" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-700 bg-darkbg text-gray-300 hover:bg-gray-800 transition text-sm font-medium">
+            <i id="themeToggleIcon" class="fas fa-moon text-blue-400"></i>
+            <span id="themeToggleLabel">Dark</span>
+        </button>
         <div class="relative">
             <button id="langMenuBtn" class="flex items-center space-x-1 bg-darkbg border border-gray-700 rounded-full px-3 py-1.5 text-sm font-medium text-gray-300 hover:bg-gray-800 transition">
                 <i class="fas fa-globe mr-1"></i>
@@ -182,4 +186,44 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
         langBtn.addEventListener('click', (e) => { e.stopPropagation(); langDropdown.classList.toggle('hidden'); langDropdown.classList.toggle('active'); });
         window.addEventListener('click', () => { langDropdown.classList.add('hidden'); langDropdown.classList.remove('active'); });
     }
+</script>
+<script>
+    function syncThemeToggleButton() {
+        const isLight = document.documentElement.classList.contains('light-mode');
+        const icon = document.getElementById('themeToggleIcon');
+        const label = document.getElementById('themeToggleLabel');
+        const btn = document.getElementById('themeToggleBtn');
+
+        if (!icon || !label || !btn) return;
+
+        if (isLight) {
+            icon.classList.remove('fa-moon', 'text-blue-400');
+            icon.classList.add('fa-sun', 'text-yellow-400');
+            label.textContent = 'Light';
+            btn.classList.add('border-yellow-500/30');
+            btn.classList.remove('border-gray-700');
+        } else {
+            icon.classList.remove('fa-sun', 'text-yellow-400');
+            icon.classList.add('fa-moon', 'text-blue-400');
+            label.textContent = 'Dark';
+            btn.classList.add('border-gray-700');
+            btn.classList.remove('border-yellow-500/30');
+        }
+    }
+
+    syncThemeToggleButton();
+
+    const originalToggleTheme = window.toggleTheme;
+    window.toggleTheme = function () {
+        if (typeof originalToggleTheme === 'function') {
+            originalToggleTheme();
+            syncThemeToggleButton();
+        }
+    };
+
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'theme' || event.key === 'login_theme') {
+            syncThemeToggleButton();
+        }
+    });
 </script>
