@@ -24,18 +24,18 @@
         }
 
         html.light-mode {
-            --bg-darkbg: #f4f7fb;
+            --bg-darkbg: #f7f9fc;
             --bg-surface: #ffffff;
-            --bg-surface-2: #f8fafc;
-            --border-color: #d7e0ea;
+            --bg-surface-2: #f4f7fb;
+            --border-color: #d4dde7;
             --text-main: #0f172a;
-            --text-heading: #0f172a;
-            --text-body: #334155;
+            --text-heading: #020617;
+            --text-body: #1e293b;
             --text-muted: #64748b;
             --input-bg: #ffffff;
-            --input-border: #cbd5e1;
-            --hover-bg: #e8edf4;
-            --shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.08);
+            --input-border: #c4cfdb;
+            --hover-bg: #e5ebf2;
+            --shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.07);
         }
 
         body {
@@ -54,10 +54,14 @@
 
         html.light-mode .text-white { color: var(--text-heading) !important; }
         html.light-mode .text-gray-100 { color: var(--text-heading) !important; }
+        html.light-mode .text-gray-50 { color: var(--text-heading) !important; }
+        html.light-mode .text-gray-600 { color: #475569 !important; }
         html.light-mode .text-gray-200,
         html.light-mode .text-gray-300,
         html.light-mode .text-gray-400,
         html.light-mode .text-gray-500 { color: var(--text-muted) !important; }
+        html.light-mode .text-gray-700 { color: #334155 !important; }
+        html.light-mode .text-gray-800 { color: #1e293b !important; }
         html.light-mode .border-gray-800,
         html.light-mode .border-gray-700 { border-color: var(--border-color) !important; }
         html.light-mode .bg-gray-800,
@@ -75,6 +79,20 @@
         html.light-mode .text-red-500 { color: #dc2626 !important; }
         html.light-mode .text-purple-400 { color: #7c3aed !important; }
         html.light-mode .text-green-500 { color: #16a34a !important; }
+        html.light-mode .text-blue-500 { color: #2563eb !important; }
+        html.light-mode .text-yellow-500 { color: #d97706 !important; }
+        html.light-mode .text-red-400 { color: #dc2626 !important; }
+        html.light-mode .bg-blue-600 { background-color: #2563eb !important; }
+        html.light-mode .bg-yellow-600 { background-color: #d97706 !important; }
+        html.light-mode .bg-red-500\/10 { background-color: rgba(220, 38, 38, 0.08) !important; }
+        html.light-mode .border-blue-500\/30 { border-color: rgba(37, 99, 235, 0.22) !important; }
+        html.light-mode .border-purple-500\/30 { border-color: rgba(124, 58, 237, 0.22) !important; }
+        html.light-mode .border-yellow-500\/30 { border-color: rgba(217, 119, 6, 0.22) !important; }
+        html.light-mode .border-red-500\/30 { border-color: rgba(220, 38, 38, 0.22) !important; }
+        html.light-mode .bg-blue-500\/15 { background-color: rgba(37, 99, 235, 0.08) !important; }
+        html.light-mode .bg-yellow-500\/15 { background-color: rgba(217, 119, 6, 0.10) !important; }
+        html.light-mode .bg-red-500\/10 { background-color: rgba(220, 38, 38, 0.08) !important; }
+        html.light-mode .bg-green-500\/20 { background-color: rgba(22, 163, 74, 0.08) !important; }
         html.light-mode input,
         html.light-mode select,
         html.light-mode textarea {
@@ -84,10 +102,16 @@
         }
         html.light-mode input::placeholder,
         html.light-mode textarea::placeholder {
-            color: var(--text-muted) !important;
+            color: #94a3b8 !important;
         }
         html.light-mode button:hover {
             filter: brightness(0.985);
+        }
+        html.light-mode a {
+            color: inherit;
+        }
+        html.light-mode .bg-surface\/80 {
+            background-color: rgba(255, 255, 255, 0.88) !important;
         }
         html.light-mode .shadow-md,
         html.light-mode .shadow-xl,

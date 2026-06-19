@@ -22,25 +22,27 @@ function verifyCSRFToken($token) {
     <style>
         body {
             transition: background 0.3s, color 0.3s;
+            color: #f8fafc;
         }
         body.dark {
             background: radial-gradient(circle at 20% 30%, #0a0a0a, #000000);
-            color: #f0f0f0;
+            color: #f8fafc;
         }
         body.light {
-            background: radial-gradient(circle at 20% 30%, #e0e0e0, #b0b0b0);
-            color: #1f2937;
+            background: radial-gradient(circle at 20% 30%, #f7f9fc, #e5edf7);
+            color: #0f172a;
         }
         .glass-card {
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(0, 0, 0, 0.60);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: background 0.3s, border 0.3s;
         }
         body.light .glass-card {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.88);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
         }
         .toggle-btn {
             cursor: pointer;
@@ -50,20 +52,30 @@ function verifyCSRFToken($token) {
             opacity: 0.8;
         }
         input, select {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
+            background: rgba(255, 255, 255, 0.10);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: #f8fafc;
         }
         body.light input, body.light select {
-            background: rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            color: #1f2937;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            color: #0f172a;
+        }
+        body.light input::placeholder {
+            color: #94a3b8;
         }
         input:focus, select:focus {
             outline: none;
             border-color: #3b82f6;
-            ring: 2px solid #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
         }
+        body.light .text-gray-300 { color: #475569 !important; }
+        body.light .text-gray-400 { color: #64748b !important; }
+        body.light .text-white { color: #0f172a !important; }
+        body.light .bg-white\/10 { background: rgba(255, 255, 255, 0.72) !important; }
+        body.light .border-gray-600 { border-color: rgba(148, 163, 184, 0.35) !important; }
+        body.light .bg-blue-600 { background: #2563eb !important; }
+        body.light .hover\:bg-blue-700:hover { background: #1d4ed8 !important; }
     </style>
 </head>
 <body class="dark">

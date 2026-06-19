@@ -28,13 +28,16 @@ $kelas = $query_kelas->fetch_assoc();
 // Otorisasi akses halaman
 $allowed = false;
 $is_owner = false;
+$can_manage_materials = false;
 if ($role === 'admin') {
     $allowed = true;
     $is_owner = true;
+    $can_manage_materials = true;
 } elseif ($role === 'dosen') {
     if ($kelas['dosen_id'] == $user['id']) {
         $allowed = true;
         $is_owner = true;
+        $can_manage_materials = true;
     }
 } elseif ($role === 'mahasiswa') {
     $stmt_cek = $conn->prepare("SELECT 1 FROM class_members WHERE class_id = ? AND mahasiswa_id = ?");
@@ -44,6 +47,93 @@ if ($role === 'admin') {
     $stmt_cek->close();
 }
 if (!$allowed) { die("Anda tidak memiliki akses ke kelas ini."); }
+
+// =========================================================
+// PROSES UPLOAD MATERI (DOSEN/ADMIN)
+// =========================================================
+if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) {
+    if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
+        die("CSRF token tidak valid.");
+    }
+    if (!$can_manage_materials) {
+        die("Anda tidak berwenang mengunggah materi di kelas ini.");
+    }
+
+    $judul_materi = trim($_POST['judul_materi'] ?? '');
+    $deskripsi_materi = trim($_POST['deskripsi_materi'] ?? '');
+    $max_size = 10 * 1024 * 1024;
+    $allowed_mime = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+
+    if ($judul_materi === '') {
+        die("Judul materi wajib diisi.");
+    }
+
+    if (!isset($_FILES['file_materi']) || $_FILES['file_materi']['error'] !== 0) {
+        die("File materi wajib diunggah.");
+    }
+
+    $tmp_name = $_FILES['file_materi']['tmp_name'];
+    $original_name = $_FILES['file_materi']['name'];
+    $file_size = (int)$_FILES['file_materi']['size'];
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime_type = finfo_file($finfo, $tmp_name);
+    finfo_close($finfo);
+
+    if (!in_array($mime_type, $allowed_mime)) {
+        header("Location: detail_kelas.php?id=$class_id&pesan=materi_format_salah");
+        exit();
+    }
+
+    if ($file_size > $max_size) {
+        header("Location: detail_kelas.php?id=$class_id&pesan=materi_terlalu_besar");
+        exit();
+    }
+
+    $folder = 'uploads/materi/';
+    if (!is_dir($folder)) {
+        mkdir($folder, 0777, true);
+    }
+
+    $file_ext = pathinfo($original_name, PATHINFO_EXTENSION);
+    $nama_simpan = bin2hex(random_bytes(16)) . '.' . strtolower($file_ext ?: 'bin');
+    $file_path = $folder . $nama_simpan;
+
+    if (move_uploaded_file($tmp_name, $file_path)) {
+        $stmt_mat = $conn->prepare("INSERT INTO materials (class_id, judul, deskripsi, file_path, original_name, mime_type, file_size, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt_mat->bind_param("isssssii", $class_id, $judul_materi, $deskripsi_materi, $file_path, $original_name, $mime_type, $file_size, $user['id']);
+        $stmt_mat->execute();
+        $stmt_mat->close();
+
+        $desc_materi_mhs = "Dosen membagikan materi baru: " . $judul_materi . " di kelas " . $kelas['nama_kelas'];
+        $stmt_member = $conn->prepare("SELECT mahasiswa_id FROM class_members WHERE class_id = ?");
+        $stmt_member->bind_param("i", $class_id);
+        $stmt_member->execute();
+        $res_member = $stmt_member->get_result();
+        while ($row = $res_member->fetch_assoc()) {
+            $ins = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'materi')");
+            $ins->bind_param("is", $row['mahasiswa_id'], $desc_materi_mhs);
+            $ins->execute();
+            $ins->close();
+        }
+        $stmt_member->close();
+
+        $desc_materi_dosen = "Anda telah membagikan materi baru: " . $judul_materi;
+        $ins_dosen = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'materi')");
+        $ins_dosen->bind_param("is", $user['id'], $desc_materi_dosen);
+        $ins_dosen->execute();
+        $ins_dosen->close();
+
+        header("Location: detail_kelas.php?id=$class_id&pesan=materi_sukses");
+        exit();
+    }
+
+    header("Location: detail_kelas.php?id=$class_id&pesan=materi_gagal");
+    exit();
+}
 
 // =========================================================
 // PROSES KELUAR KELAS (MAHASISWA)
@@ -152,6 +242,19 @@ if (isset($_POST['buat_tugas']) && ($role === 'dosen' || $role === 'admin')) {
     exit();
 }
 
+// =========================================================
+// AMBIL DATA MATERI
+// =========================================================
+$materials = [];
+$stmt_materi = $conn->prepare("SELECT m.*, u.nama as uploader_nama FROM materials m JOIN users u ON m.uploaded_by = u.id WHERE m.class_id = ? ORDER BY m.created_at DESC");
+$stmt_materi->bind_param("i", $class_id);
+$stmt_materi->execute();
+$res_materi = $stmt_materi->get_result();
+while ($m = $res_materi->fetch_assoc()) {
+    $materials[] = $m;
+}
+$stmt_materi->close();
+
 include 'includes/header.php'; 
 include 'includes/navbar.php'; 
 ?>
@@ -160,6 +263,26 @@ include 'includes/navbar.php';
     <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'deadline_invalid'): ?>
         <div class="mb-4 px-4 py-3 rounded-xl border bg-red-500/20 border-red-500 text-red-300">
             <i class="fas fa-exclamation-circle mr-2"></i> Deadline tidak boleh kurang dari waktu saat ini.
+        </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'materi_sukses'): ?>
+        <div class="mb-4 px-4 py-3 rounded-xl border bg-green-500/20 border-green-500 text-green-300">
+            <i class="fas fa-check-circle mr-2"></i> Materi berhasil diunggah.
+        </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'materi_gagal'): ?>
+        <div class="mb-4 px-4 py-3 rounded-xl border bg-red-500/20 border-red-500 text-red-300">
+            <i class="fas fa-exclamation-circle mr-2"></i> Gagal mengunggah materi.
+        </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'materi_format_salah'): ?>
+        <div class="mb-4 px-4 py-3 rounded-xl border bg-orange-500/20 border-orange-500 text-orange-300">
+            <i class="fas fa-exclamation-triangle mr-2"></i> Format materi ditolak. Harap unggah PDF atau Word.
+        </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'materi_terlalu_besar'): ?>
+        <div class="mb-4 px-4 py-3 rounded-xl border bg-red-500/20 border-red-500 text-red-300">
+            <i class="fas fa-exclamation-triangle mr-2"></i> File materi terlalu besar. Maksimal 10MB.
         </div>
     <?php endif; ?>
 
@@ -201,6 +324,51 @@ include 'includes/navbar.php';
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-2 space-y-6">
+            <div class="bg-surface border border-gray-800 rounded-2xl p-5 sm:p-6 shadow-xl">
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <h3 class="text-xl font-bold text-white border-b border-gray-800 pb-3 w-full"><i class="fas fa-book-open mr-2 text-green-500"></i> Materi Kelas</h3>
+                </div>
+                <?php if (count($materials) > 0): ?>
+                    <div class="space-y-4">
+                        <?php foreach ($materials as $materi): ?>
+                            <div class="bg-darkbg border border-gray-800 rounded-2xl p-4">
+                                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <h4 class="text-lg font-bold text-white break-words"><?= htmlspecialchars($materi['judul']) ?></h4>
+                                        <p class="text-sm text-gray-400 mt-1 break-words"><?= nl2br(htmlspecialchars($materi['deskripsi'] ?? '')) ?></p>
+                                        <div class="flex flex-wrap gap-2 mt-3 text-xs">
+                                            <span class="px-2.5 py-1 rounded-lg border border-gray-700 text-gray-300 bg-surface/80">
+                                                <i class="fas fa-user mr-1"></i> <?= htmlspecialchars($materi['uploader_nama']) ?>
+                                            </span>
+                                            <span class="px-2.5 py-1 rounded-lg border border-gray-700 text-gray-300 bg-surface/80">
+                                                <i class="fas fa-file mr-1"></i> <?= strtoupper(pathinfo($materi['original_name'], PATHINFO_EXTENSION)) ?>
+                                            </span>
+                                            <span class="px-2.5 py-1 rounded-lg border border-gray-700 text-gray-300 bg-surface/80">
+                                                <i class="fas fa-weight-hanging mr-1"></i> <?= $materi['file_size'] ? number_format($materi['file_size'] / 1024, 1) . ' KB' : '-' ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <?php if (($materi['mime_type'] ?? '') === 'application/pdf'): ?>
+                                            <a href="<?= htmlspecialchars($materi['file_path']) ?>" target="_blank" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition whitespace-nowrap">
+                                                <i class="fas fa-eye mr-1"></i> Preview
+                                            </a>
+                                        <?php endif; ?>
+                                        <a href="<?= htmlspecialchars($materi['file_path']) ?>" download class="px-3 py-2 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded-lg transition whitespace-nowrap">
+                                            <i class="fas fa-download mr-1"></i> Unduh
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="bg-darkbg border border-dashed border-gray-700 rounded-2xl p-8 text-center text-gray-500">
+                        Belum ada materi di kelas ini.
+                    </div>
+                <?php endif; ?>
+            </div>
+
             <h3 class="text-xl font-bold text-white border-b border-gray-800 pb-3"><i class="fas fa-tasks mr-2 text-blue-500"></i> Tugas Kelas</h3>
             <?php
             $stmt_tugas = $conn->prepare("SELECT * FROM tasks WHERE class_id = ? ORDER BY created_at DESC");
@@ -248,9 +416,29 @@ include 'includes/navbar.php';
             <?php endif; ?>
         </div>
 
-        <?php if($is_owner): ?>
+        <?php if($can_manage_materials): ?>
         <div>
             <div class="bg-surface border border-gray-800 rounded-2xl p-5 sm:p-6 shadow-xl md:sticky md:top-24">
+                <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-3"><i class="fas fa-book-medical text-green-500 mr-2"></i> Unggah Materi</h3>
+                <form action="" method="POST" enctype="multipart/form-data" class="space-y-4 mb-6 pb-6 border-b border-gray-800">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 mb-1.5">Judul Materi</label>
+                        <input type="text" name="judul_materi" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-green-500 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 mb-1.5">Deskripsi</label>
+                        <textarea name="deskripsi_materi" rows="3" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-green-500 text-sm resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 mb-1.5">File Materi (PDF/Word)</label>
+                        <input type="file" name="file_materi" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg text-sm" required>
+                    </div>
+                    <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
+                    <button type="submit" name="upload_materi" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition mt-2">
+                        <i class="fas fa-upload mr-2"></i> Unggah Materi
+                    </button>
+                </form>
+
                 <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-3"><i class="fas fa-plus-circle text-green-500 mr-2"></i> Buat Tugas Baru</h3>
                 <form action="" method="POST" class="space-y-4">
                     <div>
