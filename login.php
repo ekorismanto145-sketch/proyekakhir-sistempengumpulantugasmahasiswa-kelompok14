@@ -101,7 +101,7 @@ if (isset($_POST['login'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - MY TASK</title>
+    <title>Login - MY ACADEMIC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -155,7 +155,7 @@ if (isset($_POST['login'])) {
                 <button id="themeToggle" class="toggle-btn text-gray-200 hover:text-white text-xl"><i class="fas fa-moon"></i></button>
                 <button id="langToggle" class="toggle-btn text-gray-200 hover:text-white text-sm font-semibold px-2 py-1 rounded-lg bg-white/10">EN</button>
             </div>
-            <h2 id="appTitle" class="text-3xl font-bold text-blue-400 mb-2">MY TASK</h2>
+            <h2 id="appTitle" class="text-3xl font-bold text-blue-400 mb-2">MY ACADEMIC</h2>
             <p id="subTitle" class="text-gray-300 mb-6">Masuk ke sistem pengumpulan tugas</p>
             <?php if (!empty($error_msg)): ?>
                 <p id="errorMsg" class='bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-lg text-sm mb-4 font-semibold'><?= htmlspecialchars($error_msg) ?></p>
@@ -171,8 +171,8 @@ if (isset($_POST['login'])) {
     </div>
     <script>
         const translations = {
-            id: { title: "MY TASK", subtitle: "Masuk ke sistem pengumpulan tugas", emailLabel: "Email", passLabel: "Kata sandi", loginBtn: "Masuk", registerText: "Belum punya akun? ", registerLink: "Daftar di sini", errorDefault: "Email atau kata sandi salah." },
-            en: { title: "MY TASK", subtitle: "Sign in to the assignment system", emailLabel: "Email", passLabel: "Password", loginBtn: "Sign In", registerText: "Don't have an account? ", registerLink: "Register here", errorDefault: "Invalid email or password." }
+            id: { title: "MY ACADEMIC", subtitle: "Masuk ke sistem pengumpulan tugas", emailLabel: "Email", passLabel: "Kata sandi", loginBtn: "Masuk", registerText: "Belum punya akun? ", registerLink: "Daftar di sini", errorDefault: "Email atau kata sandi salah." },
+            en: { title: "MY ACADEMIC", subtitle: "Sign in to the assignment system", emailLabel: "Email", passLabel: "Password", loginBtn: "Sign In", registerText: "Don't have an account? ", registerLink: "Register here", errorDefault: "Invalid email or password." }
         };
         let currentLang = localStorage.getItem('lang') || localStorage.getItem('login_lang') || 'id';
         let currentTheme = localStorage.getItem('theme') || localStorage.getItem('login_theme') || 'dark';

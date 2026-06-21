@@ -1,7 +1,7 @@
 # Plan Revisi UI dan Fitur
 
 ## Ringkasan
-Dokumen ini berisi rencana perbaikan untuk aplikasi MY TASK agar lebih jelas, lebih nyaman dipakai, dan lebih sesuai dengan peran pengguna. Fokusnya ada pada empat area:
+Dokumen ini berisi rencana perbaikan untuk aplikasi MY ACADEMIC agar lebih jelas, lebih nyaman dipakai, dan lebih sesuai dengan peran pengguna. Fokusnya ada pada empat area:
 - rekap nilai PDF yang lebih informatif,
 - pembatasan hak akses mahasiswa dan dosen,
 - fitur materi selain tugas,

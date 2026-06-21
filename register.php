@@ -21,7 +21,7 @@ function verifyCSRFToken($token) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - MY TASK</title>
+    <title>Register - MY ACADEMIC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -98,7 +98,7 @@ function verifyCSRFToken($token) {
             </div>
 
             <h2 id="formTitle" class="text-3xl font-bold text-blue-400 mb-2">Daftar Akun</h2>
-            <p id="formDesc" class="text-gray-300 mb-6">Bergabung dengan MY TASK</p>
+            <p id="formDesc" class="text-gray-300 mb-6">Bergabung dengan MY ACADEMIC</p>
 
             <!-- Tempat pesan error/success -->
             <div id="messageArea" class="mb-4"></div>
@@ -138,7 +138,7 @@ function verifyCSRFToken($token) {
         const trans = {
             id: {
                 title: "Daftar Akun",
-                desc: "Bergabung dengan MY TASK",
+                desc: "Bergabung dengan MY ACADEMIC",
                 nameLabel: "Nama Lengkap",
                 roleLabel: "Peran",
                 emailLabel: "Email",
@@ -151,7 +151,7 @@ function verifyCSRFToken($token) {
             },
             en: {
                 title: "Register Account",
-                desc: "Join MY TASK",
+                desc: "Join MY ACADEMIC",
                 nameLabel: "Full Name",
                 roleLabel: "Role",
                 emailLabel: "Email",

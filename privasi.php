@@ -14,17 +14,17 @@ include 'includes/navbar.php';
 
         <div class="space-y-8 text-gray-300 text-sm leading-relaxed">
             <section>
-                <p>Halaman ini menjelaskan bagaimana MY TASK mengumpulkan, menggunakan, menyimpan, dan melindungi data pengguna selama layanan digunakan.</p>
+                <p>Halaman ini menjelaskan bagaimana MY ACADEMIC mengumpulkan, menggunakan, menyimpan, dan melindungi data pengguna selama layanan digunakan.</p>
             </section>
 
             <section>
                 <h3 class="text-xl font-bold text-white mb-3 flex items-center"><i class="fas fa-shield-alt text-redaccent mr-2"></i> 1. Pengumpulan Data</h3>
-                <p>MY TASK mengumpulkan data yang diperlukan untuk menjalankan layanan akademik, seperti nama, email institusi, peran pengguna (admin, dosen, mahasiswa), kelas yang diikuti, aktivitas penggunaan, serta file tugas yang diunggah atau diunduh melalui sistem.</p>
+                <p>MY ACADEMIC mengumpulkan data yang diperlukan untuk menjalankan layanan akademik, seperti nama, email institusi, peran pengguna (admin, dosen, mahasiswa), kelas yang diikuti, aktivitas penggunaan, serta file tugas yang diunggah atau diunduh melalui sistem.</p>
             </section>
 
             <section>
                 <h3 class="text-xl font-bold text-white mb-3 flex items-center"><i class="fas fa-database text-blue-500 mr-2"></i> 2. Penggunaan Informasi</h3>
-                <p>Informasi tersebut digunakan untuk memverifikasi akun, menghubungkan mahasiswa dengan kelas yang tepat, menampilkan tugas dan pengumpulan kepada dosen, mencatat aktivitas akademik, serta menjaga ketertiban proses pengumpulan tugas. Data tidak digunakan untuk tujuan di luar operasional MY TASK.</p>
+                <p>Informasi tersebut digunakan untuk memverifikasi akun, menghubungkan mahasiswa dengan kelas yang tepat, menampilkan tugas dan pengumpulan kepada dosen, mencatat aktivitas akademik, serta menjaga ketertiban proses pengumpulan tugas. Data tidak digunakan untuk tujuan di luar operasional MY ACADEMIC.</p>
             </section>
 
             <section>
@@ -39,7 +39,7 @@ include 'includes/navbar.php';
 
             <section>
                 <h3 class="text-xl font-bold text-white mb-3 flex items-center"><i class="fas fa-envelope text-purple-400 mr-2"></i> 5. Perubahan Kebijakan</h3>
-                <p>Kebijakan ini dapat diperbarui sewaktu-waktu mengikuti kebutuhan pengembangan MY TASK. Jika ada perubahan penting, informasi pada halaman ini akan disesuaikan.</p>
+                <p>Kebijakan ini dapat diperbarui sewaktu-waktu mengikuti kebutuhan pengembangan MY ACADEMIC. Jika ada perubahan penting, informasi pada halaman ini akan disesuaikan.</p>
             </section>
         </div>
     </div>

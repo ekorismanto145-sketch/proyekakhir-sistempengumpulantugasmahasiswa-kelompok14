@@ -10,12 +10,12 @@ include 'includes/navbar.php';
 <main class="max-w-4xl mx-auto p-6 md:p-10">
     <div class="bg-surface border border-gray-800 rounded-3xl p-8 md:p-12 shadow-2xl">
         <h2 class="text-3xl font-extrabold text-white mb-2">Persyaratan Layanan</h2>
-        <p class="text-gray-500 text-sm mb-8 border-b border-gray-800 pb-6">Syarat dan ketentuan penggunaan platform MY TASK.</p>
+        <p class="text-gray-500 text-sm mb-8 border-b border-gray-800 pb-6">Syarat dan ketentuan penggunaan platform MY ACADEMIC.</p>
 
         <div class="space-y-6 text-gray-300 text-sm leading-relaxed">
             <div class="bg-darkbg border border-gray-800 p-5 rounded-xl border-l-4 border-l-green-500">
                 <h3 class="font-bold text-white text-base mb-1">Pengantar</h3>
-                <p class="text-gray-400">Dengan menggunakan MY TASK, Anda menyetujui seluruh syarat dan ketentuan yang tercantum pada halaman ini.</p>
+                <p class="text-gray-400">Dengan menggunakan MY ACADEMIC, Anda menyetujui seluruh syarat dan ketentuan yang tercantum pada halaman ini.</p>
             </div>
 
             <div class="bg-darkbg border border-gray-800 p-5 rounded-xl border-l-4 border-l-redaccent">
@@ -25,7 +25,7 @@ include 'includes/navbar.php';
 
             <div class="bg-darkbg border border-gray-800 p-5 rounded-xl border-l-4 border-l-blue-500">
                 <h3 class="font-bold text-white text-base mb-1">B. Pengumpulan Tugas</h3>
-                <p class="text-gray-400">Mahasiswa bertanggung jawab atas file yang dikumpulkan melalui MY TASK. Sistem mencatat waktu pengiriman, pembatalan pengiriman, dan perubahan deadline sebagai bukti aktivitas. Jika dosen memperpanjang deadline, mahasiswa dapat mengirim ulang selama batas waktu baru masih aktif.</p>
+                <p class="text-gray-400">Mahasiswa bertanggung jawab atas file yang dikumpulkan melalui MY ACADEMIC. Sistem mencatat waktu pengiriman, pembatalan pengiriman, dan perubahan deadline sebagai bukti aktivitas. Jika dosen memperpanjang deadline, mahasiswa dapat mengirim ulang selama batas waktu baru masih aktif.</p>
             </div>
 
             <div class="bg-darkbg border border-gray-800 p-5 rounded-xl border-l-4 border-l-green-500">
@@ -40,7 +40,7 @@ include 'includes/navbar.php';
 
             <div class="bg-darkbg border border-gray-800 p-5 rounded-xl border-l-4 border-l-purple-500">
                 <h3 class="font-bold text-white text-base mb-1">E. Perubahan Layanan</h3>
-                <p class="text-gray-400">MY TASK dapat menambahkan fitur, mengubah tampilan, atau memperbarui aturan layanan untuk menyesuaikan kebutuhan perkuliahan. Penggunaan berkelanjutan berarti Anda menerima perubahan tersebut.</p>
+                <p class="text-gray-400">MY ACADEMIC dapat menambahkan fitur, mengubah tampilan, atau memperbarui aturan layanan untuk menyesuaikan kebutuhan perkuliahan. Penggunaan berkelanjutan berarti Anda menerima perubahan tersebut.</p>
             </div>
         </div>
     </div>

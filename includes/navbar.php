@@ -33,7 +33,7 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
 
 <div id="sidebar" class="fixed inset-y-0 left-0 w-[85vw] max-w-xs sm:w-64 bg-surface border-r border-gray-800 shadow-2xl z-50 transform -translate-x-full sidebar-transition flex flex-col">
     <div class="p-6 border-b border-gray-800 flex justify-between items-center">
-        <h1 class="text-xl font-bold tracking-wider text-white">MY<span class="text-gray-500">TASK</span></h1>
+        <h1 class="text-xl font-bold tracking-wider text-white">MY <span class="text-gray-500">ACADEMIC</span></h1>
         <button onclick="toggleSidebar()" class="text-gray-500 hover:text-redaccent transition"><i class="fas fa-times text-lg"></i></button>
     </div>
     <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
@@ -98,7 +98,7 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
 <nav class="bg-surface/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-30 px-3 sm:px-4 py-3 flex justify-between items-center gap-2">
     <div class="flex items-center space-x-4">
         <button onclick="toggleSidebar()" class="p-2 text-gray-400 hover:text-[var(--text-main)] hover:bg-gray-800 rounded-lg transition"><i class="fas fa-bars text-xl"></i></button>
-        <div class="hidden md:flex items-center space-x-2"><div class="w-1.5 h-6 bg-redaccent rounded-full"></div><span class="text-lg font-bold text-[var(--text-main)] tracking-widest">MY TASK</span></div>
+        <div class="hidden md:flex items-center space-x-2"><div class="w-1.5 h-6 bg-redaccent rounded-full"></div><span class="text-lg font-bold text-[var(--text-main)] tracking-widest">MY ACADEMIC</span></div>
     </div>
     <div class="flex items-center space-x-2 md:space-x-4">
         <!-- Toggle Bahasa Dropdown -->
