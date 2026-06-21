@@ -124,22 +124,46 @@ if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) 
     $conn->begin_transaction();
     try {
         $stmt_mat = $conn->prepare("INSERT INTO materials (class_id, judul, deskripsi, file_path, original_name, mime_type, file_size, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        if (!$stmt_mat) {
+            throw new Exception('prepare_material_failed: ' . $conn->error);
+        }
         $stmt_mat->bind_param("isssssii", $class_id, $judul_materi, $deskripsi_materi, $file_path, $original_name, $mime_type, $file_size, $user['id']);
         if (!$stmt_mat->execute()) {
-            throw new Exception('insert_failed');
+            throw new Exception('insert_material_failed: ' . $stmt_mat->error);
         }
         $stmt_mat->close();
 
+        // Material storage is the primary operation; notifications must not roll it back.
+        $conn->commit();
+    } catch (Throwable $e) {
+        $conn->rollback();
+        if ($saved_file && file_exists($file_path)) {
+            @unlink($file_path);
+        }
+        error_log('[material-upload] class_id=' . $class_id . ' user_id=' . $user['id'] . ' error=' . $e->getMessage());
+        header("Location: detail_kelas.php?id=$class_id&pesan=materi_gagal");
+        exit();
+    }
+
+    try {
         $desc_materi_mhs = t('activity_material_shared_by_teacher_prefix') . $judul_materi . ' di kelas ' . $kelas['nama_kelas'];
         $stmt_member = $conn->prepare("SELECT mahasiswa_id FROM class_members WHERE class_id = ?");
+        if (!$stmt_member) {
+            throw new Exception('prepare_member_failed: ' . $conn->error);
+        }
         $stmt_member->bind_param("i", $class_id);
-        $stmt_member->execute();
+        if (!$stmt_member->execute()) {
+            throw new Exception('select_members_failed: ' . $stmt_member->error);
+        }
         $res_member = $stmt_member->get_result();
         while ($row = $res_member->fetch_assoc()) {
             $ins = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'materi')");
+            if (!$ins) {
+                throw new Exception('prepare_activity_failed: ' . $conn->error);
+            }
             $ins->bind_param("is", $row['mahasiswa_id'], $desc_materi_mhs);
             if (!$ins->execute()) {
-                throw new Exception('activity_failed');
+                throw new Exception('insert_activity_failed: ' . $ins->error);
             }
             $ins->close();
         }
@@ -147,23 +171,20 @@ if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) 
 
         $desc_materi_dosen = t('activity_material_shared_by_you_prefix') . $judul_materi;
         $ins_dosen = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'materi')");
+        if (!$ins_dosen) {
+            throw new Exception('prepare_owner_activity_failed: ' . $conn->error);
+        }
         $ins_dosen->bind_param("is", $user['id'], $desc_materi_dosen);
         if (!$ins_dosen->execute()) {
-            throw new Exception('activity_failed');
+            throw new Exception('insert_owner_activity_failed: ' . $ins_dosen->error);
         }
         $ins_dosen->close();
-
-        $conn->commit();
-        header("Location: detail_kelas.php?id=$class_id&pesan=materi_sukses");
-        exit();
     } catch (Throwable $e) {
-        $conn->rollback();
-        if ($saved_file && file_exists($file_path)) {
-            @unlink($file_path);
-        }
-        header("Location: detail_kelas.php?id=$class_id&pesan=materi_gagal");
-        exit();
+        error_log('[material-notification] class_id=' . $class_id . ' user_id=' . $user['id'] . ' error=' . $e->getMessage());
     }
+
+    header("Location: detail_kelas.php?id=$class_id&pesan=materi_sukses");
+    exit();
 }
 
 // =========================================================
@@ -681,6 +702,8 @@ include 'includes/navbar.php';
             event.preventDefault();
 
             const formData = new FormData(materialForm);
+            // FormData(form) does not include the submit button that triggered this handler.
+            formData.set('upload_materi', '1');
             const xhr = new XMLHttpRequest();
 
             materialUploadBtn.disabled = true;
@@ -696,11 +719,12 @@ include 'includes/navbar.php';
             });
 
             xhr.addEventListener('load', function () {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    window.location.href = 'detail_kelas.php?id=<?= $class_id ?>&pesan=materi_sukses';
-                    return;
-                }
-                window.location.href = 'detail_kelas.php?id=<?= $class_id ?>&pesan=materi_gagal';
+                const responseUrl = new URL(xhr.responseURL || window.location.href, window.location.href);
+                const result = responseUrl.searchParams.get('pesan');
+                window.location.href = 'detail_kelas.php?id=<?= $class_id ?>&pesan=' +
+                    (xhr.status >= 200 && xhr.status < 300 && result === 'materi_sukses'
+                        ? 'materi_sukses'
+                        : (result || 'materi_gagal'));
             });
 
             xhr.addEventListener('error', function () {
