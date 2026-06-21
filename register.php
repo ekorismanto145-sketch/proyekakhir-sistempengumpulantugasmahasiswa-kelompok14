@@ -108,22 +108,22 @@ function verifyCSRFToken($token) {
                 <input id="formLang" type="hidden" name="lang" value="id">
                 <div>
                     <label id="nameLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Nama Lengkap</label>
-                    <input type="text" name="nama" placeholder="Nama Lengkap" class="w-full p-3 rounded-lg" required>
+                    <input id="nameInput" type="text" name="nama" placeholder="Masukkan nama lengkap" class="w-full p-3 rounded-lg" required>
                 </div>
                 <div>
                     <label id="roleLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Role</label>
-                    <select name="role" class="w-full p-3 rounded-lg" required>
+                    <select id="roleSelect" name="role" class="w-full p-3 rounded-lg" required>
                         <option value="mahasiswa">Mahasiswa (Gunakan NIM)</option>
                         <option value="dosen">Dosen (Gunakan NIP)</option>
                     </select>
                 </div>
                 <div>
                     <label id="emailLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Email</label>
-                    <input type="email" name="email" placeholder="Contoh: 25044...@student.trunojoyo.ac.id" class="w-full p-3 rounded-lg" required>
+                    <input id="emailInput" type="email" name="email" placeholder="Masukkan email" class="w-full p-3 rounded-lg" required>
                 </div>
                 <div>
                     <label id="passLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Password</label>
-                    <input type="password" name="password" placeholder="Minimal 6 karakter" class="w-full p-3 rounded-lg" required minlength="6">
+                    <input id="passwordInput" type="password" name="password" placeholder="Masukkan kata sandi" class="w-full p-3 rounded-lg" required minlength="6">
                 </div>
                 <button id="registerBtn" type="submit" name="register" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-bold transition">Daftar</button>
             </form>
@@ -143,6 +143,11 @@ function verifyCSRFToken($token) {
                 roleLabel: "Peran",
                 emailLabel: "Email",
                 passLabel: "Kata sandi",
+                namePlaceholder: "Masukkan nama lengkap",
+                emailPlaceholder: "Masukkan email",
+                passPlaceholder: "Masukkan kata sandi",
+                roleStudent: "Mahasiswa (Gunakan NIM)",
+                roleLecturer: "Dosen (Gunakan NIP)",
                 btn: "Daftar",
                 loginText: "Sudah punya akun? ",
                 loginLink: "Masuk",
@@ -156,6 +161,11 @@ function verifyCSRFToken($token) {
                 roleLabel: "Role",
                 emailLabel: "Email",
                 passLabel: "Password",
+                namePlaceholder: "Enter full name",
+                emailPlaceholder: "Enter email",
+                passPlaceholder: "Enter password",
+                roleStudent: "Student (Use NIM)",
+                roleLecturer: "Lecturer (Use NIP)",
                 btn: "Register",
                 loginText: "Already have an account? ",
                 loginLink: "Sign In",
@@ -176,6 +186,12 @@ function verifyCSRFToken($token) {
             document.getElementById('roleLabel').innerText = t.roleLabel;
             document.getElementById('emailLabel').innerText = t.emailLabel;
             document.getElementById('passLabel').innerText = t.passLabel;
+            document.getElementById('nameInput').placeholder = t.namePlaceholder;
+            document.getElementById('emailInput').placeholder = t.emailPlaceholder;
+            document.getElementById('passwordInput').placeholder = t.passPlaceholder;
+            const roleSelect = document.getElementById('roleSelect');
+            roleSelect.options[0].text = t.roleStudent;
+            roleSelect.options[1].text = t.roleLecturer;
             document.getElementById('registerBtn').innerText = t.btn;
             const loginPara = document.getElementById('loginLink');
             loginPara.innerHTML = `${t.loginText}<a href="login.php" class="text-blue-400 hover:underline">${t.loginLink}</a>`;
