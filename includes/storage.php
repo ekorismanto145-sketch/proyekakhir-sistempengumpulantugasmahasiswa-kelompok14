@@ -33,20 +33,46 @@ function storageRelativePath($subdirectory, $filename) {
     return 'uploads/' . ($safe_subdirectory !== '' ? $safe_subdirectory . '/' : '') . basename($filename);
 }
 
-function storageAbsolutePath($stored_path) {
+function storageCandidatePaths($stored_path) {
     if (!$stored_path) {
-        return null;
+        return [];
     }
 
     $normalized = str_replace('\\', '/', trim($stored_path));
     if (preg_match('#(^|/)\.\.(/|$)#', $normalized)) {
-        return null;
+        return [];
     }
+
+    $candidates = [];
     if (preg_match('#^[A-Za-z]:/#', $normalized) || str_starts_with($normalized, '/')) {
-        return str_replace('/', DIRECTORY_SEPARATOR, $normalized);
+        $candidates[] = str_replace('/', DIRECTORY_SEPARATOR, $normalized);
+        return $candidates;
     }
-    if (str_starts_with($normalized, 'uploads/')) {
-        $normalized = substr($normalized, strlen('uploads/'));
+
+    $relative = str_starts_with($normalized, 'uploads/')
+        ? substr($normalized, strlen('uploads/'))
+        : $normalized;
+    $relative = ltrim($relative, '/');
+
+    $candidates[] = storageRoot() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative);
+    $candidates[] = dirname(storageRoot()) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative);
+
+    $basename = basename($relative);
+    if ($basename !== '') {
+        $candidates[] = storageRoot() . DIRECTORY_SEPARATOR . $basename;
+        $candidates[] = dirname(storageRoot()) . DIRECTORY_SEPARATOR . $basename;
     }
-    return storageRoot() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, ltrim($normalized, '/'));
+
+    return array_values(array_unique($candidates));
+}
+
+function storageAbsolutePath($stored_path) {
+    foreach (storageCandidatePaths($stored_path) as $candidate) {
+        if (is_file($candidate)) {
+            return $candidate;
+        }
+    }
+
+    $candidates = storageCandidatePaths($stored_path);
+    return $candidates[0] ?? null;
 }
