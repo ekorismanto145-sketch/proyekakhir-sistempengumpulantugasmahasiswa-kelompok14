@@ -70,6 +70,33 @@ foreach ($task_material_columns as $column_name => $column_definition) {
     }
 }
 
+$task_attachments_table_sql = "CREATE TABLE IF NOT EXISTS task_attachments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    task_id INT NOT NULL,
+    material_id INT DEFAULT NULL,
+    file_path VARCHAR(255) DEFAULT NULL,
+    original_name VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(100) DEFAULT NULL,
+    file_size INT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+    FOREIGN KEY (material_id) REFERENCES materials(id) ON DELETE CASCADE,
+    INDEX (task_id),
+    INDEX (material_id)
+)";
+$conn->query($task_attachments_table_sql);
+$conn->query(
+    "INSERT INTO task_attachments (task_id, material_id, file_path, original_name, mime_type, file_size)
+     SELECT t.id, CASE WHEN m.id IS NOT NULL THEN t.material_reference_id ELSE NULL END,
+            CASE WHEN t.material_reference_id IS NULL THEN t.material_file_path ELSE NULL END,
+            COALESCE(t.material_original_name, m.original_name, 'Attachment'),
+            m.mime_type, m.file_size
+     FROM tasks t
+     LEFT JOIN materials m ON t.material_reference_id = m.id
+     WHERE (m.id IS NOT NULL OR t.material_file_path IS NOT NULL)
+       AND NOT EXISTS (SELECT 1 FROM task_attachments ta WHERE ta.task_id = t.id)"
+);
+
 if (isset($_GET['toggle_lang'])) {
     $new_lang = $_GET['toggle_lang'];
     if (in_array($new_lang, ['id', 'en'], true)) {

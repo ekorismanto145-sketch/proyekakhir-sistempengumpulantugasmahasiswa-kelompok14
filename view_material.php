@@ -49,8 +49,10 @@ if (!file_exists($full_path)) {
 }
 
 $mime_type = $material['mime_type'] ?: 'application/octet-stream';
+$disposition = isset($_GET['download']) ? 'attachment' : 'inline';
+$safe_name = str_replace(["\r", "\n", '"'], '', basename($material['original_name']));
 header('Content-Type: ' . $mime_type);
-header('Content-Disposition: inline; filename="' . $material['original_name'] . '"');
+header('Content-Disposition: ' . $disposition . '; filename="' . $safe_name . '"');
 header('Content-Length: ' . filesize($full_path));
 header('Cache-Control: private, max-age=0, must-revalidate');
 header('Pragma: public');
