@@ -101,16 +101,15 @@ if (isset($_POST['login'])) {
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { transition: background 0.3s, color 0.3s; }
-        body.dark { background: radial-gradient(circle at 20% 30%, #0a0a0a, #000000); color: #f0f0f0; }
-        body.light { background: radial-gradient(circle at 20% 30%, #e0e0e0, #b0b0b0); color: #1f2937; }
+        body { transition: background 0.3s, color 0.3s; background: radial-gradient(circle at 20% 30%, #0a0a0a, #000000); color: #f0f0f0; }
+        html.light-mode body { background: radial-gradient(circle at 20% 30%, #e0e0e0, #b0b0b0); color: #1f2937; }
         .glass-card {
             background: rgba(0, 0, 0, 0.55);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: background 0.3s, border 0.3s;
         }
-        body.light .glass-card {
+        html.light-mode .glass-card {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(0, 0, 0, 0.1);
@@ -160,10 +159,10 @@ if (isset($_POST['login'])) {
         }
         function applyTheme(theme) {
             if (theme === 'light') {
-                document.body.classList.remove('dark'); document.body.classList.add('light');
+                document.documentElement.classList.add('light-mode');
                 document.querySelector('#themeToggle i').classList.remove('fa-moon'); document.querySelector('#themeToggle i').classList.add('fa-sun');
             } else {
-                document.body.classList.remove('light'); document.body.classList.add('dark');
+                document.documentElement.classList.remove('light-mode');
                 document.querySelector('#themeToggle i').classList.remove('fa-sun'); document.querySelector('#themeToggle i').classList.add('fa-moon');
             }
             localStorage.setItem('theme', theme);

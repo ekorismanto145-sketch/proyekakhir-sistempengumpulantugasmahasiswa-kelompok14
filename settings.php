@@ -206,15 +206,4 @@ include 'includes/navbar.php';
     </div>
 </main>
 
-<script>
-    function toggleTheme() {
-        if(document.documentElement.classList.contains('light-mode')) {
-            document.documentElement.classList.remove('light-mode');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.documentElement.classList.add('light-mode');
-            localStorage.setItem('theme', 'light');
-        }
-    }
-</script>
 </body></html>

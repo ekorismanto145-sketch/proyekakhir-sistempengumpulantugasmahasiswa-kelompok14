@@ -23,12 +23,9 @@ function verifyCSRFToken($token) {
         body {
             transition: background 0.3s, color 0.3s;
             color: #f8fafc;
-        }
-        body.dark {
             background: radial-gradient(circle at 20% 30%, #0a0a0a, #000000);
-            color: #f8fafc;
         }
-        body.light {
+        html.light-mode body {
             background: radial-gradient(circle at 20% 30%, #f7f9fc, #e5edf7);
             color: #0f172a;
         }
@@ -38,7 +35,7 @@ function verifyCSRFToken($token) {
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: background 0.3s, border 0.3s;
         }
-        body.light .glass-card {
+        html.light-mode .glass-card {
             background: rgba(255, 255, 255, 0.88);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(148, 163, 184, 0.25);
@@ -56,12 +53,12 @@ function verifyCSRFToken($token) {
             border: 1px solid rgba(255, 255, 255, 0.16);
             color: #f8fafc;
         }
-        body.light input, body.light select {
+        html.light-mode input, html.light-mode select {
             background: rgba(255, 255, 255, 0.95);
             border: 1px solid rgba(148, 163, 184, 0.35);
             color: #0f172a;
         }
-        body.light input::placeholder {
+        html.light-mode input::placeholder {
             color: #94a3b8;
         }
         input:focus, select:focus {
@@ -69,13 +66,13 @@ function verifyCSRFToken($token) {
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
         }
-        body.light .text-gray-300 { color: #475569 !important; }
-        body.light .text-gray-400 { color: #64748b !important; }
-        body.light .text-white { color: #0f172a !important; }
-        body.light .bg-white\/10 { background: rgba(255, 255, 255, 0.72) !important; }
-        body.light .border-gray-600 { border-color: rgba(148, 163, 184, 0.35) !important; }
-        body.light .bg-blue-600 { background: #2563eb !important; }
-        body.light .hover\:bg-blue-700:hover { background: #1d4ed8 !important; }
+        html.light-mode .text-gray-300 { color: #475569 !important; }
+        html.light-mode .text-gray-400 { color: #64748b !important; }
+        html.light-mode .text-white { color: #0f172a !important; }
+        html.light-mode .bg-white\/10 { background: rgba(255, 255, 255, 0.72) !important; }
+        html.light-mode .border-gray-600 { border-color: rgba(148, 163, 184, 0.35) !important; }
+        html.light-mode .bg-blue-600 { background: #2563eb !important; }
+        html.light-mode .hover\:bg-blue-700:hover { background: #1d4ed8 !important; }
     </style>
 </head>
 <body class="dark">
@@ -156,7 +153,7 @@ function verifyCSRFToken($token) {
             }
         };
         let currentLang = localStorage.getItem('register_lang') || 'id';
-        let currentTheme = localStorage.getItem('register_theme') || 'dark';
+        let currentTheme = localStorage.getItem('theme') || localStorage.getItem('register_theme') || 'dark';
 
         function applyLanguage(lang) {
             const t = trans[lang];
@@ -174,18 +171,17 @@ function verifyCSRFToken($token) {
 
         function applyTheme(theme) {
             if (theme === 'light') {
-                document.body.classList.remove('dark');
-                document.body.classList.add('light');
+                document.documentElement.classList.add('light-mode');
                 const icon = document.querySelector('#themeToggle i');
                 icon.classList.remove('fa-moon');
                 icon.classList.add('fa-sun');
             } else {
-                document.body.classList.remove('light');
-                document.body.classList.add('dark');
+                document.documentElement.classList.remove('light-mode');
                 const icon = document.querySelector('#themeToggle i');
                 icon.classList.remove('fa-sun');
                 icon.classList.add('fa-moon');
             }
+            localStorage.setItem('theme', theme);
             localStorage.setItem('register_theme', theme);
         }
 

@@ -66,6 +66,7 @@
         html.light-mode .border-gray-700 { border-color: var(--border-color) !important; }
         html.light-mode .bg-gray-800,
         html.light-mode .bg-gray-900 { background-color: var(--hover-bg) !important; }
+        html.light-mode .bg-gray-700 { background-color: #d6dee8 !important; }
         html.light-mode .bg-darkbg { background-color: var(--bg-darkbg) !important; }
         html.light-mode .bg-surface { background-color: var(--bg-surface) !important; }
         html.light-mode .bg-surface-2 { background-color: var(--bg-surface-2) !important; }
@@ -84,15 +85,29 @@
         html.light-mode .text-red-400 { color: #dc2626 !important; }
         html.light-mode .bg-blue-600 { background-color: #2563eb !important; }
         html.light-mode .bg-yellow-600 { background-color: #d97706 !important; }
+        html.light-mode .bg-green-600 { background-color: #16a34a !important; }
+        html.light-mode .bg-red-600 { background-color: #dc2626 !important; }
+        html.light-mode .bg-purple-600 { background-color: #7c3aed !important; }
         html.light-mode .bg-red-500\/10 { background-color: rgba(220, 38, 38, 0.08) !important; }
+        html.light-mode .bg-green-500\/5 { background-color: rgba(34, 197, 94, 0.06) !important; }
+        html.light-mode .bg-yellow-500\/5 { background-color: rgba(234, 179, 8, 0.08) !important; }
+        html.light-mode .bg-blue-500\/5 { background-color: rgba(59, 130, 246, 0.06) !important; }
         html.light-mode .border-blue-500\/30 { border-color: rgba(37, 99, 235, 0.22) !important; }
         html.light-mode .border-purple-500\/30 { border-color: rgba(124, 58, 237, 0.22) !important; }
         html.light-mode .border-yellow-500\/30 { border-color: rgba(217, 119, 6, 0.22) !important; }
         html.light-mode .border-red-500\/30 { border-color: rgba(220, 38, 38, 0.22) !important; }
+        html.light-mode .border-green-500\/30 { border-color: rgba(22, 163, 74, 0.22) !important; }
+        html.light-mode .border-blue-500\/50 { border-color: rgba(37, 99, 235, 0.36) !important; }
+        html.light-mode .border-gray-600 { border-color: #b7c3d3 !important; }
         html.light-mode .bg-blue-500\/15 { background-color: rgba(37, 99, 235, 0.08) !important; }
         html.light-mode .bg-yellow-500\/15 { background-color: rgba(217, 119, 6, 0.10) !important; }
         html.light-mode .bg-red-500\/10 { background-color: rgba(220, 38, 38, 0.08) !important; }
         html.light-mode .bg-green-500\/20 { background-color: rgba(22, 163, 74, 0.08) !important; }
+        html.light-mode .bg-green-500\/10 { background-color: rgba(22, 163, 74, 0.06) !important; }
+        html.light-mode .bg-red-500\/20 { background-color: rgba(220, 38, 38, 0.10) !important; }
+        html.light-mode .bg-blue-600\/50 { background-color: rgba(37, 99, 235, 0.44) !important; }
+        html.light-mode .text-green-400 { color: #16a34a !important; }
+        html.light-mode .text-gray-900 { color: #020617 !important; }
         html.light-mode input,
         html.light-mode select,
         html.light-mode textarea {
@@ -157,6 +172,7 @@
                 localStorage.setItem('theme', 'light');
                 localStorage.setItem('login_theme', 'light');
             }
+            window.dispatchEvent(new Event('storage'));
         }
     </script>
 </head>
