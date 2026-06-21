@@ -127,6 +127,7 @@ include 'includes/navbar.php';
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><?= t('perbarui_foto') ?></label>
+                        <p class="text-[11px] text-gray-500 mb-2"><?= t('profile_photo_file') ?></p>
                         <input type="file" name="foto" accept="image/*" class="block w-full text-sm text-gray-400 border border-gray-700 bg-darkbg rounded-xl cursor-pointer">
                     </div>
                     <div class="md:col-span-2">

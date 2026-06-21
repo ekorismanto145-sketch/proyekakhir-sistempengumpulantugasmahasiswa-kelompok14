@@ -2,6 +2,8 @@
 include 'includes/db.php'; 
 include 'includes/lang.php';
 
+$current_page_lang = $_SESSION['lang'] ?? 'id';
+
 $requested_lang = $_POST['lang'] ?? '';
 if (in_array($requested_lang, ['id', 'en'], true)) {
     $_SESSION['lang'] = $requested_lang;
@@ -18,7 +20,7 @@ function verifyCSRFToken($token) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?= htmlspecialchars($current_page_lang, ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -122,8 +124,8 @@ function verifyCSRFToken($token) {
                 <div>
                     <label id="roleLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1"><?= t('role_label') ?></label>
                     <select id="roleSelect" name="role" class="w-full p-3 rounded-lg" required>
-                        <option value="mahasiswa">Mahasiswa (Gunakan NIM)</option>
-                        <option value="dosen">Dosen (Gunakan NIP)</option>
+                        <option value="mahasiswa"><?= t('register_role_student') ?></option>
+                        <option value="dosen"><?= t('register_role_lecturer') ?></option>
                     </select>
                 </div>
                 <div>
@@ -146,43 +148,43 @@ function verifyCSRFToken($token) {
         // Multi bahasa
         const trans = {
             id: {
-                title: "<?= t('register_title') ?>",
-                desc: "<?= t('register_desc') ?>",
-                nameLabel: "<?= t('register_name_label') ?>",
-                roleLabel: "<?= t('role_label') ?>",
-                emailLabel: "<?= t('email_label') ?>",
-                passLabel: "<?= t('password_label') ?>",
-                namePlaceholder: "<?= t('register_name_placeholder') ?>",
-                emailPlaceholder: "<?= t('email_placeholder') ?>",
-                passPlaceholder: "<?= t('password_placeholder') ?>",
-                roleStudent: "<?= t('register_role_student') ?>",
-                roleLecturer: "<?= t('register_role_lecturer') ?>",
-                btn: "<?= t('register_button') ?>",
-                loginText: "<?= t('already_have_account') ?> ",
-                loginLink: "<?= t('login_button') ?>",
+                title: "Daftar Akun",
+                desc: "Bergabung dengan MY ACADEMIC",
+                nameLabel: "Nama Lengkap",
+                roleLabel: "Peran",
+                emailLabel: "Email",
+                passLabel: "Kata sandi",
+                namePlaceholder: "Masukkan nama lengkap",
+                emailPlaceholder: "Masukkan email",
+                passPlaceholder: "Masukkan kata sandi",
+                roleStudent: "Mahasiswa (Gunakan NIM)",
+                roleLecturer: "Dosen (Gunakan NIP)",
+                btn: "Daftar",
+                loginText: "Sudah punya akun? ",
+                loginLink: "Login",
                 errorDefault: "Terjadi kesalahan. Periksa kembali data Anda.",
                 successMsg: "Registrasi berhasil. Silakan masuk."
             },
             en: {
-                title: "<?= t('register_title') ?>",
-                desc: "<?= t('register_desc') ?>",
-                nameLabel: "<?= t('register_name_label') ?>",
-                roleLabel: "<?= t('role_label') ?>",
-                emailLabel: "<?= t('email_label') ?>",
-                passLabel: "<?= t('password_label') ?>",
-                namePlaceholder: "<?= t('register_name_placeholder') ?>",
-                emailPlaceholder: "<?= t('email_placeholder') ?>",
-                passPlaceholder: "<?= t('password_placeholder') ?>",
-                roleStudent: "<?= t('register_role_student') ?>",
-                roleLecturer: "<?= t('register_role_lecturer') ?>",
-                btn: "<?= t('register_button') ?>",
-                loginText: "<?= t('already_have_account') ?> ",
-                loginLink: "<?= t('login_button') ?>",
+                title: "Register Account",
+                desc: "Join MY ACADEMIC",
+                nameLabel: "Full Name",
+                roleLabel: "Role",
+                emailLabel: "Email",
+                passLabel: "Password",
+                namePlaceholder: "Enter full name",
+                emailPlaceholder: "Enter email",
+                passPlaceholder: "Enter password",
+                roleStudent: "Student (Use NIM)",
+                roleLecturer: "Lecturer (Use NIP)",
+                btn: "Register",
+                loginText: "Already have an account? ",
+                loginLink: "Sign In",
                 errorDefault: "An error occurred. Please check your data.",
                 successMsg: "Registration successful. Please sign in."
             }
         };
-        let currentLang = localStorage.getItem('lang') || localStorage.getItem('register_lang') || 'id';
+        let currentLang = localStorage.getItem('lang') || localStorage.getItem('register_lang') || '<?= $current_page_lang ?>';
         let currentTheme = localStorage.getItem('theme') || localStorage.getItem('register_theme') || 'dark';
 
         function applyLanguage(lang) {

@@ -117,6 +117,7 @@ $translations = [
         'selected_file' => 'File terpilih',
         'no_file_selected' => 'Belum ada file dipilih',
         'choose_file' => 'Klik untuk memilih file',
+        'profile_photo_file' => 'Pilih file foto',
         'submission_saved' => 'Tugas berhasil dikirim!',
         'submission_cancelled' => 'Pengumpulan berhasil dibatalkan. Anda dapat mengumpulkan ulang.',
         'invalid_format' => 'Format ditolak! Harap unggah file PDF atau Word.',
@@ -129,7 +130,7 @@ $translations = [
 
         // Index / Dashboard
         'system_overview' => 'System Overview',
-        'welcome_back' => 'Welcome back',
+        'welcome_back' => 'Selamat datang',
         'kelas_aktif' => 'Kelas Aktif',
         'masuk_kelas' => 'Masuk Kelas',
         'aktivitas_terkini' => 'Aktivitas Terkini',
@@ -483,6 +484,7 @@ $translations = [
         'selected_file' => 'Selected file',
         'no_file_selected' => 'No file selected',
         'choose_file' => 'Click to select file',
+        'profile_photo_file' => 'Choose photo file',
         'submission_saved' => 'Task submitted successfully!',
         'submission_cancelled' => 'Submission cancelled successfully. You can resubmit.',
         'invalid_format' => 'Invalid format! Please upload PDF or Word file.',

@@ -12,6 +12,7 @@ if (isset($_SESSION['user'])) {
 }
 
 $error_msg = "";
+$current_page_lang = $_SESSION['lang'] ?? 'id';
 
 if (isset($_POST['login'])) {
     $requested_lang = $_POST['lang'] ?? '';
@@ -98,7 +99,7 @@ if (isset($_POST['login'])) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?= htmlspecialchars($current_page_lang, ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -172,10 +173,10 @@ if (isset($_POST['login'])) {
     </div>
     <script>
         const translations = {
-            id: { title: "MY ACADEMIC", subtitle: "<?= t('login_desc') ?>", emailLabel: "<?= t('email_label') ?>", passLabel: "<?= t('password_label') ?>", emailPlaceholder: "<?= t('email_placeholder') ?>", passPlaceholder: "<?= t('password_placeholder') ?>", loginBtn: "<?= t('login_button') ?>", registerText: "<?= t('no_account_yet') ?> ", registerLink: "<?= t('register_here') ?>", errorDefault: "Email atau kata sandi salah." },
-            en: { title: "MY ACADEMIC", subtitle: "<?= t('login_desc') ?>", emailLabel: "<?= t('email_label') ?>", passLabel: "<?= t('password_label') ?>", emailPlaceholder: "<?= t('email_placeholder') ?>", passPlaceholder: "<?= t('password_placeholder') ?>", loginBtn: "<?= t('login_button') ?>", registerText: "<?= t('no_account_yet') ?> ", registerLink: "<?= t('register_here') ?>", errorDefault: "Invalid email or password." }
+            id: { title: "MY ACADEMIC", subtitle: "Masuk ke sistem pengumpulan tugas", emailLabel: "Email", passLabel: "Kata sandi", emailPlaceholder: "Masukkan email", passPlaceholder: "Masukkan kata sandi", loginBtn: "Masuk", registerText: "Belum punya akun? ", registerLink: "Daftar di sini", errorDefault: "Email atau kata sandi salah." },
+            en: { title: "MY ACADEMIC", subtitle: "Sign in to the assignment system", emailLabel: "Email", passLabel: "Password", emailPlaceholder: "Enter email", passPlaceholder: "Enter password", loginBtn: "Sign In", registerText: "Don't have an account? ", registerLink: "Register here", errorDefault: "Invalid email or password." }
         };
-        let currentLang = localStorage.getItem('lang') || localStorage.getItem('login_lang') || 'id';
+        let currentLang = localStorage.getItem('lang') || localStorage.getItem('login_lang') || '<?= $current_page_lang ?>';
         let currentTheme = localStorage.getItem('theme') || localStorage.getItem('login_theme') || 'dark';
         function applyLanguage(lang) {
             const t = translations[lang];
