@@ -29,6 +29,16 @@ if (!$conn) {
 }
 
 if (session_status() === PHP_SESSION_NONE) {
+    $sessionLifetime = 15 * 60;
+    ini_set('session.gc_maxlifetime', (string)$sessionLifetime);
+    ini_set('session.cookie_lifetime', (string)$sessionLifetime);
+    session_set_cookie_params([
+        'lifetime' => $sessionLifetime,
+        'path' => '/',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
 }
 
@@ -49,6 +59,14 @@ $materials_table_sql = "CREATE TABLE IF NOT EXISTS materials (
     INDEX (uploaded_by)
 )";
 $conn->query($materials_table_sql);
+
+$users_email_index = $conn->query("SHOW INDEX FROM users WHERE Key_name = 'uniq_users_email'");
+if ($users_email_index && $users_email_index->num_rows === 0) {
+    $existing_email_index = $conn->query("SHOW INDEX FROM users WHERE Column_name = 'email' AND Non_unique = 0 LIMIT 1");
+    if ($existing_email_index && $existing_email_index->num_rows === 0) {
+        $conn->query("ALTER TABLE users ADD UNIQUE KEY uniq_users_email (email)");
+    }
+}
 
 $task_material_columns = [
     'material_source_type' => "ENUM('upload_baru','existing') DEFAULT 'upload_baru'",

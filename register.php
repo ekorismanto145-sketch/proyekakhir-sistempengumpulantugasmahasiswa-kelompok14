@@ -247,18 +247,19 @@ function verifyCSRFToken($token) {
                 $msg = "CSRF token tidak valid.";
             } else {
                 $nama = trim($_POST['nama']);
-                $email = trim($_POST['email']);
+                $email = strtolower(trim($_POST['email']));
                 $password = $_POST['password'];
                 $role = $_POST['role'];
                 $errors = [];
                 if (empty($nama)) $errors[] = "Nama harus diisi.";
                 if (empty($email)) $errors[] = "Email harus diisi.";
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Format email tidak valid.";
                 if (strlen($password) < 6) $errors[] = "Password minimal 6 karakter.";
                 if (!in_array($role, ['mahasiswa','dosen'])) $errors[] = "Role tidak valid.";
                 if ($role == 'dosen' && !preg_match("/^[0-9]+@dosen\.trunojoyo\.ac\.id$/", $email)) $errors[] = "Format email dosen salah.";
                 if ($role == 'mahasiswa' && !preg_match("/^[0-9]+@student\.trunojoyo\.ac\.id$/", $email)) $errors[] = "Format email mahasiswa salah.";
                 if (empty($errors)) {
-                    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+                    $stmt = $conn->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1");
                     $stmt->bind_param("s", $email);
                     $stmt->execute();
                     $stmt->store_result();
@@ -274,6 +275,8 @@ function verifyCSRFToken($token) {
                     if ($stmt->execute()) {
                         $isSuccess = true;
                         $msg = "Registrasi Berhasil! Silakan Login.";
+                    } elseif ((int)$stmt->errno === 1062) {
+                        $msg = "Email sudah terdaftar.";
                     } else {
                         $msg = "Error: " . $stmt->error;
                     }
