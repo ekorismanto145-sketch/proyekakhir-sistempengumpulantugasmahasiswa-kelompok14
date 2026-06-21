@@ -318,6 +318,9 @@ include 'includes/navbar.php';
                                 <p class="text-sm text-gray-400 mt-1"><?= htmlspecialchars($t['nama_kelas']) ?> • <?= t('lecturer_label') ?>: <?= htmlspecialchars($t['dosen']) ?></p>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">
+                        <a href="detail_kelas.php?id=<?= $t['class_id'] ?>#materials" class="text-xs bg-blue-600 hover:bg-blue-500 px-2 py-1 rounded text-white whitespace-nowrap">
+                            <i class="fas fa-eye mr-1"></i> <?= t('materials_title') ?>
+                        </a>
                         <?php if ($is_expired): ?>
                             <span class="px-3 py-1 bg-red-500/10 text-red-400 border border-red-500/50 text-xs font-bold rounded-lg">
                                 <i class="fas fa-clock mr-1.5"></i> <?= t('deadline_label') ?>: <?= date('d M Y, H:i', $deadline_time) ?>

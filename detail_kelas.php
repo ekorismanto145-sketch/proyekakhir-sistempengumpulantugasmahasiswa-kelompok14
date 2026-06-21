@@ -373,7 +373,7 @@ include 'includes/navbar.php';
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-2 space-y-6">
-            <div class="bg-surface border border-gray-800 rounded-2xl p-5 sm:p-6 shadow-xl">
+            <div id="materials" class="bg-surface border border-gray-800 rounded-2xl p-5 sm:p-6 shadow-xl">
                 <div class="flex items-center justify-between gap-3 mb-4">
                     <h3 class="text-xl font-bold text-white border-b border-gray-800 pb-3 w-full"><i class="fas fa-book-open mr-2 text-green-500"></i> <?= t('materials_title') ?></h3>
                 </div>
@@ -398,11 +398,9 @@ include 'includes/navbar.php';
                                         </div>
                                     </div>
                                     <div class="flex flex-wrap gap-2">
-                                        <?php if (($materi['mime_type'] ?? '') === 'application/pdf'): ?>
-                                            <a href="<?= htmlspecialchars($materi['file_path']) ?>" target="_blank" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition whitespace-nowrap">
-                                                <i class="fas fa-eye mr-1"></i> <?= t('preview') ?>
-                                            </a>
-                                        <?php endif; ?>
+                                        <button type="button" onclick='openMaterialPreview(<?= (int)$materi["id"] ?>, <?= json_encode($materi["judul"] ?? "") ?>, <?= json_encode($materi["mime_type"] ?? "application/octet-stream") ?>, <?= json_encode($materi["file_path"] ?? "") ?>)' class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition whitespace-nowrap">
+                                            <i class="fas fa-eye mr-1"></i> <?= t('preview') ?>
+                                        </button>
                                         <a href="<?= htmlspecialchars($materi['file_path']) ?>" download class="px-3 py-2 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded-lg transition whitespace-nowrap">
                                             <i class="fas fa-download mr-1"></i> <?= t('download') ?>
                                         </a>
@@ -498,9 +496,18 @@ include 'includes/navbar.php';
             <div>
                 <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('pdf_word') ?></label>
                 <input type="file" name="file_materi" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg text-sm" required>
+                <div class="mt-3">
+                    <div class="flex items-center justify-between text-[11px] text-gray-400 mb-1">
+                        <span><?= t('upload_progress') ?></span>
+                        <span id="materialProgressText">0%</span>
+                    </div>
+                    <div class="h-2 rounded-full bg-gray-800 overflow-hidden">
+                        <div id="materialProgressBar" class="h-full w-0 bg-gradient-to-r from-green-500 to-emerald-400 transition-[width] duration-200"></div>
+                    </div>
+                </div>
             </div>
             <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
-            <button type="submit" name="upload_materi" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition mt-2"><?= t('upload_material') ?></button>
+            <button type="submit" name="upload_materi" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition mt-2" id="materialUploadBtn"><?= t('upload_material') ?></button>
         </form>
     </div>
 </div>
@@ -554,6 +561,26 @@ include 'includes/navbar.php';
     </div>
 </div>
 
+<div id="materialPreviewModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center transition-opacity opacity-0">
+    <div class="bg-surface border border-gray-700 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300">
+        <div class="flex justify-between items-center p-5 border-b border-gray-800 bg-darkbg">
+            <div class="min-w-0">
+                <h3 id="materialPreviewTitle" class="text-xl font-bold text-white truncate"><?= t('preview') ?></h3>
+                <p class="text-xs text-gray-400 mt-1"><?= t('preview') ?> <?= t('materials_title') ?></p>
+            </div>
+            <button onclick="closeMaterialPreview()" class="text-gray-500 hover:text-red-500 transition"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <div class="bg-black">
+            <iframe id="materialPreviewFrame" class="w-full h-[75vh] bg-white" src="about:blank" title="<?= t('preview') ?>"></iframe>
+        </div>
+        <div class="p-4 border-t border-gray-800 bg-darkbg flex justify-end gap-3">
+            <a id="materialPreviewDownload" href="#" download class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white font-bold transition">
+                <i class="fas fa-download mr-2"></i> <?= t('download') ?>
+            </a>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Edit Deadline -->
 <div id="deadlineModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center transition-opacity opacity-0">
     <div class="bg-surface border border-gray-700 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300">
@@ -585,6 +612,15 @@ include 'includes/navbar.php';
 <script>
     const materialModal = document.getElementById('materialModal');
     const materialModalBox = materialModal.querySelector('.bg-surface');
+    const materialForm = materialModal.querySelector('form');
+    const materialUploadBtn = document.getElementById('materialUploadBtn');
+    const materialProgressBar = document.getElementById('materialProgressBar');
+    const materialProgressText = document.getElementById('materialProgressText');
+    const materialPreviewModal = document.getElementById('materialPreviewModal');
+    const materialPreviewModalBox = materialPreviewModal.querySelector('.bg-surface');
+    const materialPreviewFrame = document.getElementById('materialPreviewFrame');
+    const materialPreviewTitle = document.getElementById('materialPreviewTitle');
+    const materialPreviewDownload = document.getElementById('materialPreviewDownload');
     const taskModal = document.getElementById('taskModal');
     const taskModalBox = taskModal.querySelector('.bg-surface');
     const modal = document.getElementById('deadlineModal');
@@ -601,6 +637,17 @@ include 'includes/navbar.php';
     }
     function openMaterialModal() { openModal(materialModal, materialModalBox); }
     function closeMaterialModal() { closeModal(materialModal, materialModalBox); }
+    function openMaterialPreview(materialId, title, mimeType, filePath) {
+        materialPreviewTitle.textContent = title;
+        materialPreviewFrame.src = 'view_material.php?material_id=' + materialId;
+        materialPreviewDownload.href = filePath || '#';
+        materialPreviewDownload.setAttribute('download', '');
+        openModal(materialPreviewModal, materialPreviewModalBox);
+    }
+    function closeMaterialPreview() {
+        materialPreviewFrame.src = 'about:blank';
+        closeModal(materialPreviewModal, materialPreviewModalBox);
+    }
     function openTaskModal() { openModal(taskModal, taskModalBox); toggleTaskMaterialMode(); }
     function closeTaskModal() { closeModal(taskModal, taskModalBox); }
     function toggleTaskMaterialMode() {
@@ -627,6 +674,42 @@ include 'includes/navbar.php';
     }
     function closeDeadlineModal() {
         closeModal(modal, modalBox);
+    }
+
+    if (materialForm) {
+        materialForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(materialForm);
+            const xhr = new XMLHttpRequest();
+
+            materialUploadBtn.disabled = true;
+            materialUploadBtn.textContent = '<?= t('uploading') ?>';
+            materialProgressBar.style.width = '0%';
+            materialProgressText.textContent = '0%';
+
+            xhr.upload.addEventListener('progress', function (e) {
+                if (!e.lengthComputable) return;
+                const percent = Math.round((e.loaded / e.total) * 100);
+                materialProgressBar.style.width = percent + '%';
+                materialProgressText.textContent = percent + '%';
+            });
+
+            xhr.addEventListener('load', function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    window.location.href = 'detail_kelas.php?id=<?= $class_id ?>&pesan=materi_sukses';
+                    return;
+                }
+                window.location.href = 'detail_kelas.php?id=<?= $class_id ?>&pesan=materi_gagal';
+            });
+
+            xhr.addEventListener('error', function () {
+                window.location.href = 'detail_kelas.php?id=<?= $class_id ?>&pesan=materi_gagal';
+            });
+
+            xhr.open('POST', window.location.href, true);
+            xhr.send(formData);
+        });
     }
 </script>
 </body></html>
