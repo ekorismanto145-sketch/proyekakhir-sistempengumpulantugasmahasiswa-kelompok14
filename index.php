@@ -1,5 +1,6 @@
 <?php 
 include 'includes/db.php'; 
+include 'includes/lang.php';
 
 if (!isset($_SESSION['user'])) {
     header("Location: login.php");
