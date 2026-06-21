@@ -35,7 +35,47 @@ if (isset($_GET['toggle_lang'])) {
     if (in_array($new_lang, ['id', 'en'], true)) {
         $_SESSION['lang'] = $new_lang;
     }
-    $redirect_url = strtok($_SERVER['REQUEST_URI'], '?');
+
+    // Backward compatibility for old language links while preserving page params.
+    $request_uri = $_SERVER['REQUEST_URI'] ?? '/index.php';
+    $url_parts = parse_url($request_uri);
+    $query = [];
+    if (!empty($url_parts['query'])) {
+        parse_str($url_parts['query'], $query);
+    }
+    unset($query['toggle_lang']);
+    $redirect_url = $url_parts['path'] ?? '/index.php';
+    if ($query) {
+        $redirect_url .= '?' . http_build_query($query);
+    }
+    header('Location: ' . $redirect_url);
+    exit();
+}
+
+if (isset($_GET['switch_role'])) {
+    $new_role = $_GET['switch_role'];
+    if (!isset($_SESSION['user']['original_role'])) {
+        $_SESSION['user']['original_role'] = $_SESSION['user']['role'] ?? '';
+    }
+
+    if (
+        ($_SESSION['user']['original_role'] ?? '') === 'admin'
+        && in_array($new_role, ['admin', 'dosen', 'mahasiswa'], true)
+    ) {
+        $_SESSION['user']['role'] = $new_role;
+    }
+
+    $request_uri = $_SERVER['REQUEST_URI'] ?? '/index.php';
+    $url_parts = parse_url($request_uri);
+    $query = [];
+    if (!empty($url_parts['query'])) {
+        parse_str($url_parts['query'], $query);
+    }
+    unset($query['switch_role']);
+    $redirect_url = $url_parts['path'] ?? '/index.php';
+    if ($query) {
+        $redirect_url .= '?' . http_build_query($query);
+    }
     header('Location: ' . $redirect_url);
     exit();
 }

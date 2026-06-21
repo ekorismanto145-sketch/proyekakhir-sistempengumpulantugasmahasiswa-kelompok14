@@ -13,6 +13,10 @@ if (isset($_SESSION['user'])) {
 $error_msg = "";
 
 if (isset($_POST['login'])) {
+    $requested_lang = $_POST['lang'] ?? '';
+    if (in_array($requested_lang, ['id', 'en'], true)) {
+        $_SESSION['lang'] = $requested_lang;
+    }
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
@@ -157,6 +161,7 @@ if (isset($_POST['login'])) {
                 <p id="errorMsg" class='bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-lg text-sm mb-4 font-semibold'><?= htmlspecialchars($error_msg) ?></p>
             <?php endif; ?>
             <form action="" method="POST" class="space-y-4" autocomplete="off">
+                <input id="formLang" type="hidden" name="lang" value="id">
                 <div><label id="emailLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Email</label><input type="email" name="email" placeholder="nama@student.trunojoyo.ac.id" class="w-full p-3 rounded-lg bg-white/10 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 outline-none transition" required autocomplete="off"></div>
                 <div><label id="passLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Password</label><input type="password" name="password" placeholder="••••••••" class="w-full p-3 rounded-lg bg-white/10 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 outline-none" required autocomplete="new-password"></div>
                 <button id="loginBtn" type="submit" name="login" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-lg">Masuk</button>
@@ -173,6 +178,7 @@ if (isset($_POST['login'])) {
         let currentTheme = localStorage.getItem('theme') || localStorage.getItem('login_theme') || 'dark';
         function applyLanguage(lang) {
             const t = translations[lang];
+            document.documentElement.lang = lang;
             document.getElementById('appTitle').innerText = t.title;
             document.getElementById('subTitle').innerText = t.subtitle;
             document.getElementById('emailLabel').innerText = t.emailLabel;
@@ -184,6 +190,7 @@ if (isset($_POST['login'])) {
             localStorage.setItem('lang', lang);
             localStorage.setItem('ui_lang', lang);
             localStorage.setItem('login_lang', lang);
+            document.getElementById('formLang').value = lang;
         }
         function applyTheme(theme) {
             if (theme === 'light') {

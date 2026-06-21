@@ -2,26 +2,6 @@
 // Pastikan file kamus dipanggil jika belum
 if (!function_exists('t')) { include_once 'lang.php'; }
 
-// Logika beralih peran (impersonation)
-if (isset($_GET['switch_role'])) {
-    $new_role = $_GET['switch_role'];
-    if (!isset($_SESSION['user']['original_role'])) {
-        $_SESSION['user']['original_role'] = $_SESSION['user']['role'] ?? '';
-    }
-    if ($_SESSION['user']['original_role'] === 'admin') {
-        if (in_array($new_role, ['admin', 'dosen', 'mahasiswa'])) {
-            $_SESSION['user']['role'] = $new_role;
-            $redirect_url = strtok($_SERVER["REQUEST_URI"], '?');
-            if (!headers_sent()) {
-                header("Location: " . $redirect_url);
-            } else {
-                echo '<script>window.location.replace(' . json_encode($redirect_url) . ');</script>';
-            }
-            exit();
-        }
-    }
-}
-
 // Avatar
 if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_profil'])) {
     $avatar_url = 'uploads/' . $_SESSION['user']['foto_profil'];
@@ -120,7 +100,12 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
     </div>
     <div class="flex items-center space-x-2 md:space-x-4">
         <!-- Toggle Bahasa Dropdown -->
-        <?php $currentLang = $_SESSION['lang'] ?? 'id'; ?>
+        <?php
+        $currentLang = $_SESSION['lang'] ?? 'id';
+        $languageReturnUrl = $_SERVER['REQUEST_URI'] ?? '/index.php';
+        $indonesianUrl = 'set_language.php?' . http_build_query(['lang' => 'id', 'return' => $languageReturnUrl]);
+        $englishUrl = 'set_language.php?' . http_build_query(['lang' => 'en', 'return' => $languageReturnUrl]);
+        ?>
         <button id="themeToggleBtn" type="button" onclick="toggleTheme()" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-700 bg-darkbg text-gray-300 hover:bg-gray-800 transition text-sm font-medium">
             <i id="themeToggleIcon" class="fas fa-moon text-blue-400"></i>
             <span id="themeToggleLabel"><?= t('dark') ?></span>
@@ -132,8 +117,8 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
                 <i class="fas fa-chevron-down text-xs ml-1"></i>
             </button>
             <div id="langDropdown" class="dropdown-menu absolute right-0 mt-2 w-32 bg-surface border border-gray-700 rounded-xl shadow-lg z-50 overflow-hidden hidden">
-                <a href="?toggle_lang=id" onclick="localStorage.setItem('lang','id'); localStorage.setItem('ui_lang','id');" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 transition">ID - <?= t('language_indonesia') ?></a>
-                <a href="?toggle_lang=en" onclick="localStorage.setItem('lang','en'); localStorage.setItem('ui_lang','en');" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 transition">EN - <?= t('language_english') ?></a>
+                <a href="<?= htmlspecialchars($indonesianUrl, ENT_QUOTES, 'UTF-8') ?>" onclick="localStorage.setItem('lang','id'); localStorage.setItem('ui_lang','id');" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 transition">ID - <?= t('language_indonesia') ?></a>
+                <a href="<?= htmlspecialchars($englishUrl, ENT_QUOTES, 'UTF-8') ?>" onclick="localStorage.setItem('lang','en'); localStorage.setItem('ui_lang','en');" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 transition">EN - <?= t('language_english') ?></a>
             </div>
         </div>
 
@@ -180,10 +165,8 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
         langBtn.addEventListener('click', (e) => { e.stopPropagation(); langDropdown.classList.toggle('hidden'); langDropdown.classList.toggle('active'); });
         window.addEventListener('click', () => { langDropdown.classList.add('hidden'); langDropdown.classList.remove('active'); });
     }
-    if (!localStorage.getItem('lang') && '<?php echo $currentLang; ?>') {
-        localStorage.setItem('lang', '<?php echo $currentLang; ?>');
-        localStorage.setItem('ui_lang', '<?php echo $currentLang; ?>');
-    }
+    localStorage.setItem('lang', '<?php echo $currentLang; ?>');
+    localStorage.setItem('ui_lang', '<?php echo $currentLang; ?>');
 </script>
 <script>
     function syncThemeToggleButton() {

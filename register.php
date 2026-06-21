@@ -1,6 +1,11 @@
 <?php 
 include 'includes/db.php'; 
 
+$requested_lang = $_POST['lang'] ?? '';
+if (in_array($requested_lang, ['id', 'en'], true)) {
+    $_SESSION['lang'] = $requested_lang;
+}
+
 function generateCSRFToken() {
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -100,6 +105,7 @@ function verifyCSRFToken($token) {
 
             <form id="registerForm" action="" method="POST" class="space-y-4">
                 <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
+                <input id="formLang" type="hidden" name="lang" value="id">
                 <div>
                     <label id="nameLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Nama Lengkap</label>
                     <input type="text" name="nama" placeholder="Nama Lengkap" class="w-full p-3 rounded-lg" required>
@@ -162,6 +168,7 @@ function verifyCSRFToken($token) {
 
         function applyLanguage(lang) {
             const t = trans[lang];
+            document.documentElement.lang = lang;
             document.getElementById('formTitle').innerText = t.title;
             document.getElementById('formDesc').innerText = t.desc;
             document.getElementById('nameLabel').innerText = t.nameLabel;
@@ -174,6 +181,7 @@ function verifyCSRFToken($token) {
             localStorage.setItem('lang', lang);
             localStorage.setItem('ui_lang', lang);
             localStorage.setItem('register_lang', lang);
+            document.getElementById('formLang').value = lang;
         }
 
         function applyTheme(theme) {

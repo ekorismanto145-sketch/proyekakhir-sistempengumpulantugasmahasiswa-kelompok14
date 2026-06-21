@@ -23,7 +23,9 @@ if (isset($_POST['simpan_profil'])) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
         die(t('csrf_invalid'));
     }
-    if (isset($_POST['bahasa'])) { $_SESSION['lang'] = $_POST['bahasa']; }
+    if (isset($_POST['bahasa']) && in_array($_POST['bahasa'], ['id', 'en'], true)) {
+        $_SESSION['lang'] = $_POST['bahasa'];
+    }
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === 0) {
         $ekstensi = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
         $nama_file_baru = 'profil_' . $user['id'] . '_' . time() . '.' . $ekstensi;
