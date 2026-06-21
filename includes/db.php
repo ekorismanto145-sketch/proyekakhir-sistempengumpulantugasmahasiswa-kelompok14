@@ -48,6 +48,28 @@ $materials_table_sql = "CREATE TABLE IF NOT EXISTS materials (
 )";
 $conn->query($materials_table_sql);
 
+$task_material_columns = [
+    'material_source_type' => "ENUM('upload_baru','existing') DEFAULT 'upload_baru'",
+    'material_reference_id' => 'INT DEFAULT NULL',
+    'material_file_path' => 'VARCHAR(255) DEFAULT NULL',
+    'material_original_name' => 'VARCHAR(255) DEFAULT NULL'
+];
+foreach ($task_material_columns as $column_name => $column_definition) {
+    $column_stmt = $conn->prepare(
+        "SELECT 1 FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tasks' AND COLUMN_NAME = ?
+         LIMIT 1"
+    );
+    $column_stmt->bind_param('s', $column_name);
+    $column_stmt->execute();
+    $column_exists = $column_stmt->get_result()->num_rows > 0;
+    $column_stmt->close();
+
+    if (!$column_exists) {
+        $conn->query("ALTER TABLE tasks ADD COLUMN `$column_name` $column_definition");
+    }
+}
+
 if (isset($_GET['toggle_lang'])) {
     $new_lang = $_GET['toggle_lang'];
     if (in_array($new_lang, ['id', 'en'], true)) {

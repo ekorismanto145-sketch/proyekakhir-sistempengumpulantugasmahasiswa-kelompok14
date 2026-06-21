@@ -15,11 +15,16 @@ function verifyCSRFToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
 function columnExists($conn, $table, $column) {
-    $stmt = $conn->prepare("SHOW COLUMNS FROM `$table` LIKE ?");
-    $stmt->bind_param("s", $column);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $exists = $result && $result->num_rows > 0;
+    $stmt = $conn->prepare(
+        "SELECT 1 FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?
+         LIMIT 1"
+    );
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param("ss", $table, $column);
+    $exists = $stmt->execute() && $stmt->get_result()->num_rows > 0;
     $stmt->close();
     return $exists;
 }
@@ -266,17 +271,90 @@ if (isset($_POST['buat_tugas']) && ($role === 'dosen' || $role === 'admin')) {
         header("Location: detail_kelas.php?id=$class_id&pesan=deadline_invalid");
         exit();
     }
+
+    $task_material_mode = $_POST['task_material_mode'] ?? 'upload_baru';
+    $task_file_path = null;
+    $task_file_name = null;
+    $existing_material_id = null;
+
+    if ($task_material_mode === 'existing') {
+        $requested_material_id = (int)($_POST['existing_material_id'] ?? 0);
+        $stmt_material = $conn->prepare("SELECT id FROM materials WHERE id = ? AND class_id = ?");
+        $stmt_material->bind_param("ii", $requested_material_id, $class_id);
+        $stmt_material->execute();
+        $valid_material = $stmt_material->get_result()->fetch_assoc();
+        $stmt_material->close();
+
+        if (!$valid_material) {
+            header("Location: detail_kelas.php?id=$class_id&pesan=task_material_required");
+            exit();
+        }
+        $existing_material_id = (int)$valid_material['id'];
+    } elseif ($task_material_mode === 'upload_baru') {
+        if (!isset($_FILES['task_material_file']) || $_FILES['task_material_file']['error'] !== UPLOAD_ERR_OK) {
+            header("Location: detail_kelas.php?id=$class_id&pesan=task_material_required");
+            exit();
+        }
+
+        $task_file_size = (int)$_FILES['task_material_file']['size'];
+        $task_tmp_name = $_FILES['task_material_file']['tmp_name'];
+        $task_file_name = basename($_FILES['task_material_file']['name']);
+        $task_finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $task_mime_type = finfo_file($task_finfo, $task_tmp_name);
+        finfo_close($task_finfo);
+        $allowed_task_mime = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+
+        if ($task_file_size > 10 * 1024 * 1024 || !in_array($task_mime_type, $allowed_task_mime, true)) {
+            header("Location: detail_kelas.php?id=$class_id&pesan=task_material_invalid");
+            exit();
+        }
+
+        $task_folder = 'uploads/task_materials/';
+        if (!is_dir($task_folder) && !mkdir($task_folder, 0777, true) && !is_dir($task_folder)) {
+            header("Location: detail_kelas.php?id=$class_id&pesan=task_material_failed");
+            exit();
+        }
+        $task_extension = strtolower(pathinfo($task_file_name, PATHINFO_EXTENSION) ?: 'bin');
+        $task_file_path = $task_folder . bin2hex(random_bytes(16)) . '.' . $task_extension;
+        if (!move_uploaded_file($task_tmp_name, $task_file_path)) {
+            header("Location: detail_kelas.php?id=$class_id&pesan=task_material_failed");
+            exit();
+        }
+    } else {
+        header("Location: detail_kelas.php?id=$class_id&pesan=task_material_required");
+        exit();
+    }
     
     $stmt2 = $conn->prepare("INSERT INTO tasks (class_id, judul, deskripsi, deadline) VALUES (?, ?, ?, ?)");
     $stmt2->bind_param("isss", $class_id, $judul, $deskripsi, $deadline);
-    $stmt2->execute();
+    if (!$stmt2->execute()) {
+        if ($task_file_path && file_exists($task_file_path)) {
+            @unlink($task_file_path);
+        }
+        header("Location: detail_kelas.php?id=$class_id&pesan=task_create_failed");
+        exit();
+    }
     $task_id = $stmt2->insert_id;
     $stmt2->close();
 
     if (columnExists($conn, 'tasks', 'material_source_type')) {
         $stmt_meta = $conn->prepare("UPDATE tasks SET material_source_type = ?, material_file_path = ?, material_original_name = ?, material_reference_id = ? WHERE id = ?");
         $stmt_meta->bind_param("sssii", $task_material_mode, $task_file_path, $task_file_name, $existing_material_id, $task_id);
-        $stmt_meta->execute();
+        if (!$stmt_meta->execute()) {
+            $delete_task = $conn->prepare("DELETE FROM tasks WHERE id = ?");
+            $delete_task->bind_param("i", $task_id);
+            $delete_task->execute();
+            $delete_task->close();
+            if ($task_file_path && file_exists($task_file_path)) {
+                @unlink($task_file_path);
+            }
+            header("Location: detail_kelas.php?id=$class_id&pesan=task_create_failed");
+            exit();
+        }
         $stmt_meta->close();
     }
     
@@ -320,6 +398,16 @@ include 'includes/navbar.php';
 ?>
 
 <main class="max-w-5xl mx-auto p-4 md:p-8">
+    <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'tugas_dibuat'): ?>
+        <div class="mb-4 px-4 py-3 rounded-xl border bg-green-500/20 border-green-500 text-green-300">
+            <i class="fas fa-check-circle mr-2"></i> <?= t('task_created_success') ?>
+        </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['pesan']) && in_array($_GET['pesan'], ['task_material_required', 'task_material_invalid', 'task_material_failed', 'task_create_failed'], true)): ?>
+        <div class="mb-4 px-4 py-3 rounded-xl border bg-red-500/20 border-red-500 text-red-300">
+            <i class="fas fa-exclamation-circle mr-2"></i> <?= t($_GET['pesan']) ?>
+        </div>
+    <?php endif; ?>
     <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'deadline_invalid'): ?>
         <div class="mb-4 px-4 py-3 rounded-xl border bg-red-500/20 border-red-500 text-red-300">
             <i class="fas fa-exclamation-circle mr-2"></i> <?= t('task_deadline_invalid') ?>
