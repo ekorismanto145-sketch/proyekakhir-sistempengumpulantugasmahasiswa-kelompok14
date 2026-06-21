@@ -63,6 +63,10 @@ CREATE TABLE tasks (
     judul VARCHAR(255) NOT NULL,
     deskripsi TEXT NOT NULL,
     deadline DATETIME NOT NULL,
+    material_source_type ENUM('upload_baru','existing') DEFAULT 'upload_baru',
+    material_reference_id INT DEFAULT NULL,
+    material_file_path VARCHAR(255) DEFAULT NULL,
+    material_original_name VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
 );

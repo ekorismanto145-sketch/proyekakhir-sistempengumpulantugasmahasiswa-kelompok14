@@ -14,6 +14,15 @@ function generateCSRFToken() {
 function verifyCSRFToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
+function columnExists($conn, $table, $column) {
+    $stmt = $conn->prepare("SHOW COLUMNS FROM `$table` LIKE ?");
+    $stmt->bind_param("s", $column);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $exists = $result && $result->num_rows > 0;
+    $stmt->close();
+    return $exists;
+}
 
 $class_id = (int)$_GET['id'];
 if ($class_id <= 0) { header("Location: index.php"); exit(); }
@@ -96,17 +105,29 @@ if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) 
 
     $folder = 'uploads/materi/';
     if (!is_dir($folder)) {
-        mkdir($folder, 0777, true);
+        if (!mkdir($folder, 0777, true) && !is_dir($folder)) {
+            header("Location: detail_kelas.php?id=$class_id&pesan=materi_gagal");
+            exit();
+        }
     }
 
     $file_ext = pathinfo($original_name, PATHINFO_EXTENSION);
     $nama_simpan = bin2hex(random_bytes(16)) . '.' . strtolower($file_ext ?: 'bin');
     $file_path = $folder . $nama_simpan;
 
-    if (move_uploaded_file($tmp_name, $file_path)) {
+    if (!move_uploaded_file($tmp_name, $file_path)) {
+        header("Location: detail_kelas.php?id=$class_id&pesan=materi_gagal");
+        exit();
+    }
+
+    $saved_file = true;
+    $conn->begin_transaction();
+    try {
         $stmt_mat = $conn->prepare("INSERT INTO materials (class_id, judul, deskripsi, file_path, original_name, mime_type, file_size, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt_mat->bind_param("isssssii", $class_id, $judul_materi, $deskripsi_materi, $file_path, $original_name, $mime_type, $file_size, $user['id']);
-        $stmt_mat->execute();
+        if (!$stmt_mat->execute()) {
+            throw new Exception('insert_failed');
+        }
         $stmt_mat->close();
 
         $desc_materi_mhs = t('activity_material_shared_by_teacher_prefix') . $judul_materi . ' di kelas ' . $kelas['nama_kelas'];
@@ -117,7 +138,9 @@ if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) 
         while ($row = $res_member->fetch_assoc()) {
             $ins = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'materi')");
             $ins->bind_param("is", $row['mahasiswa_id'], $desc_materi_mhs);
-            $ins->execute();
+            if (!$ins->execute()) {
+                throw new Exception('activity_failed');
+            }
             $ins->close();
         }
         $stmt_member->close();
@@ -125,15 +148,22 @@ if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) 
         $desc_materi_dosen = t('activity_material_shared_by_you_prefix') . $judul_materi;
         $ins_dosen = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'materi')");
         $ins_dosen->bind_param("is", $user['id'], $desc_materi_dosen);
-        $ins_dosen->execute();
+        if (!$ins_dosen->execute()) {
+            throw new Exception('activity_failed');
+        }
         $ins_dosen->close();
 
+        $conn->commit();
         header("Location: detail_kelas.php?id=$class_id&pesan=materi_sukses");
         exit();
+    } catch (Throwable $e) {
+        $conn->rollback();
+        if ($saved_file && file_exists($file_path)) {
+            @unlink($file_path);
+        }
+        header("Location: detail_kelas.php?id=$class_id&pesan=materi_gagal");
+        exit();
     }
-
-    header("Location: detail_kelas.php?id=$class_id&pesan=materi_gagal");
-    exit();
 }
 
 // =========================================================
@@ -219,7 +249,15 @@ if (isset($_POST['buat_tugas']) && ($role === 'dosen' || $role === 'admin')) {
     $stmt2 = $conn->prepare("INSERT INTO tasks (class_id, judul, deskripsi, deadline) VALUES (?, ?, ?, ?)");
     $stmt2->bind_param("isss", $class_id, $judul, $deskripsi, $deadline);
     $stmt2->execute();
+    $task_id = $stmt2->insert_id;
     $stmt2->close();
+
+    if (columnExists($conn, 'tasks', 'material_source_type')) {
+        $stmt_meta = $conn->prepare("UPDATE tasks SET material_source_type = ?, material_file_path = ?, material_original_name = ?, material_reference_id = ? WHERE id = ?");
+        $stmt_meta->bind_param("sssii", $task_material_mode, $task_file_path, $task_file_name, $existing_material_id, $task_id);
+        $stmt_meta->execute();
+        $stmt_meta->close();
+    }
     
     $desc_mahasiswa = t('activity_task_shared_by_teacher_prefix') . $judul . ' di kelas ' . $kelas['nama_kelas'];
     $stmt_member = $conn->prepare("SELECT mahasiswa_id FROM class_members WHERE class_id = ?");
@@ -429,51 +467,92 @@ include 'includes/navbar.php';
 
         <?php if($can_manage_materials): ?>
         <div>
-            <div class="bg-surface border border-gray-800 rounded-2xl p-5 sm:p-6 shadow-xl md:sticky md:top-24">
-                <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-3"><i class="fas fa-book-medical text-green-500 mr-2"></i> <?= t('upload_material') ?></h3>
-                <form action="" method="POST" enctype="multipart/form-data" class="space-y-4 mb-6 pb-6 border-b border-gray-800">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('material_title') ?></label>
-                        <input type="text" name="judul_materi" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-green-500 text-sm" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('deskripsi') ?></label>
-                        <textarea name="deskripsi_materi" rows="3" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-green-500 text-sm resize-none"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('pdf_word') ?></label>
-                        <input type="file" name="file_materi" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg text-sm" required>
-                    </div>
-                    <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
-                    <button type="submit" name="upload_materi" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition mt-2">
-                        <i class="fas fa-upload mr-2"></i> <?= t('upload_material') ?>
-                    </button>
-                </form>
-
-                <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-3"><i class="fas fa-plus-circle text-green-500 mr-2"></i> <?= t('create_new_task') ?></h3>
-                <form action="" method="POST" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('task_title') ?></label>
-                        <input type="text" name="judul" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-blue-500 text-sm" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('task_description') ?></label>
-                        <textarea name="deskripsi" rows="3" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-blue-500 text-sm resize-none" required></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('task_deadline') ?></label>
-                        <input type="datetime-local" name="deadline" min="<?= date('Y-m-d\\TH:i') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-blue-500 text-sm" required>
-                    </div>
-                    <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
-                    <button type="submit" name="buat_tugas" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition mt-2">
-                        <i class="fas fa-paper-plane mr-2"></i> <?= t('publish_task') ?>
-                    </button>
-                </form>
+            <div class="bg-surface border border-gray-800 rounded-2xl p-5 sm:p-6 shadow-xl md:sticky md:top-24 space-y-3">
+                <button type="button" onclick="openMaterialModal()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition">
+                    <i class="fas fa-upload mr-2"></i> <?= t('upload_material') ?>
+                </button>
+                <button type="button" onclick="openTaskModal()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition">
+                    <i class="fas fa-plus-circle mr-2"></i> <?= t('create_new_task') ?>
+                </button>
             </div>
         </div>
         <?php endif; ?>
     </div>
 </main>
+
+<div id="materialModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center transition-opacity opacity-0">
+    <div class="bg-surface border border-gray-700 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300">
+        <div class="flex justify-between items-center p-5 border-b border-gray-800 bg-darkbg">
+            <h3 class="text-xl font-bold text-white flex items-center"><i class="fas fa-upload text-green-500 mr-3"></i> <?= t('upload_material') ?></h3>
+            <button onclick="closeMaterialModal()" class="text-gray-500 hover:text-red-500 transition"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <form action="" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('material_title') ?></label>
+                <input type="text" name="judul_materi" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-green-500 text-sm" required>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('deskripsi') ?></label>
+                <textarea name="deskripsi_materi" rows="3" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-green-500 text-sm resize-none"></textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('pdf_word') ?></label>
+                <input type="file" name="file_materi" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg text-sm" required>
+            </div>
+            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
+            <button type="submit" name="upload_materi" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition mt-2"><?= t('upload_material') ?></button>
+        </form>
+    </div>
+</div>
+
+<div id="taskModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center transition-opacity opacity-0">
+    <div class="bg-surface border border-gray-700 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300">
+        <div class="flex justify-between items-center p-5 border-b border-gray-800 bg-darkbg">
+            <h3 class="text-xl font-bold text-white flex items-center"><i class="fas fa-plus-circle text-blue-500 mr-3"></i> <?= t('create_new_task') ?></h3>
+            <button onclick="closeTaskModal()" class="text-gray-500 hover:text-red-500 transition"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <form action="" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('task_title') ?></label>
+                <input type="text" name="judul" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-blue-500 text-sm" required>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('task_description') ?></label>
+                <textarea name="deskripsi" rows="3" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-blue-500 text-sm resize-none" required></textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('task_deadline') ?></label>
+                <input type="datetime-local" name="deadline" min="<?= date('Y-m-d\\TH:i') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-blue-500 text-sm" required>
+            </div>
+            <div class="rounded-xl border border-gray-700 bg-darkbg p-4 space-y-4">
+                <p class="text-xs font-bold uppercase tracking-wider text-gray-400"><?= t('task_material_source') ?></p>
+                <label class="flex items-center gap-3 text-sm text-gray-200">
+                    <input type="radio" name="task_material_mode" value="upload_baru" checked onchange="toggleTaskMaterialMode()" class="accent-blue-500">
+                    <span><?= t('task_material_upload_new') ?></span>
+                </label>
+                <label class="flex items-center gap-3 text-sm text-gray-200">
+                    <input type="radio" name="task_material_mode" value="existing" onchange="toggleTaskMaterialMode()" class="accent-blue-500">
+                    <span><?= t('task_material_use_existing') ?></span>
+                </label>
+                <div id="taskUploadWrap" class="space-y-2">
+                    <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('task_material_file') ?></label>
+                    <input type="file" name="task_material_file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg text-sm">
+                </div>
+                <div id="taskExistingWrap" class="hidden space-y-2">
+                    <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('task_material_existing') ?></label>
+                    <select name="existing_material_id" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg text-sm">
+                        <option value=""><?= t('choose_material') ?></option>
+                        <?php foreach ($materials as $materi): ?>
+                            <option value="<?= $materi['id'] ?>"><?= htmlspecialchars($materi['judul']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
+            <button type="submit" name="buat_tugas" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition mt-2"><?= t('publish_task') ?></button>
+        </form>
+    </div>
+</div>
 
 <!-- Modal Edit Deadline -->
 <div id="deadlineModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center transition-opacity opacity-0">
@@ -504,8 +583,35 @@ include 'includes/navbar.php';
 </div>
 
 <script>
+    const materialModal = document.getElementById('materialModal');
+    const materialModalBox = materialModal.querySelector('.bg-surface');
+    const taskModal = document.getElementById('taskModal');
+    const taskModalBox = taskModal.querySelector('.bg-surface');
     const modal = document.getElementById('deadlineModal');
     const modalBox = modal.querySelector('.bg-surface');
+    function openModal(el, box) {
+        el.classList.remove('hidden');
+        el.classList.add('flex');
+        setTimeout(() => { el.classList.remove('opacity-0'); box.classList.remove('scale-95'); }, 10);
+    }
+    function closeModal(el, box) {
+        el.classList.add('opacity-0');
+        box.classList.add('scale-95');
+        setTimeout(() => { el.classList.add('hidden'); el.classList.remove('flex'); }, 300);
+    }
+    function openMaterialModal() { openModal(materialModal, materialModalBox); }
+    function closeMaterialModal() { closeModal(materialModal, materialModalBox); }
+    function openTaskModal() { openModal(taskModal, taskModalBox); toggleTaskMaterialMode(); }
+    function closeTaskModal() { closeModal(taskModal, taskModalBox); }
+    function toggleTaskMaterialMode() {
+        const mode = document.querySelector('input[name="task_material_mode"]:checked')?.value || 'upload_baru';
+        document.getElementById('taskUploadWrap').classList.toggle('hidden', mode !== 'upload_baru');
+        document.getElementById('taskExistingWrap').classList.toggle('hidden', mode !== 'existing');
+        const fileInput = document.querySelector('input[name="task_material_file"]');
+        const selectInput = document.querySelector('select[name="existing_material_id"]');
+        if (fileInput) fileInput.required = mode === 'upload_baru';
+        if (selectInput) selectInput.required = mode === 'existing';
+    }
     function openDeadlineModal(taskId, currentDeadline) {
         document.getElementById('deadline_task_id').value = taskId;
         document.getElementById('deadline_date').value = currentDeadline;
@@ -520,12 +626,7 @@ include 'includes/navbar.php';
         }, 10);
     }
     function closeDeadlineModal() {
-        modal.classList.add('opacity-0');
-        modalBox.classList.add('scale-95');
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }, 300);
+        closeModal(modal, modalBox);
     }
 </script>
 </body></html>

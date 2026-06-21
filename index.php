@@ -170,7 +170,7 @@ include 'includes/navbar.php';
             </div>
             <div>
                 <button onclick="openClassModal()" class="px-6 py-3.5 bg-gradient-to-r from-gray-800 to-gray-900 border border-gray-600 hover:border-redaccent text-white font-semibold rounded-xl transition-all flex items-center group">
-                    <i class="fas fa-plus-circle text-redaccent mr-3 group-hover:rotate-90 transition-transform duration-300"></i> <?= t('manage_class') ?>
+                    <i class="fas fa-plus-circle text-redaccent mr-3 group-hover:rotate-90 transition-transform duration-300"></i> <?= ($role === 'dosen') ? t('create_class') : t('manage_class') ?>
                 </button>
             </div>
         </div>
@@ -257,9 +257,10 @@ include 'includes/navbar.php';
 <div id="classModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center transition-opacity opacity-0">
     <div class="bg-surface border border-gray-700 rounded-2xl w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden transform scale-95 transition-transform duration-300" id="classModalBox">
         <div class="flex justify-between items-center p-5 border-b border-gray-800 bg-darkbg">
-            <h3 class="text-xl font-bold text-white flex items-center"><i class="fas fa-chalkboard text-redaccent mr-3"></i> <?= t('kelola_kelas') ?></h3>
+            <h3 class="text-xl font-bold text-white flex items-center"><i class="fas fa-chalkboard text-redaccent mr-3"></i> <?= ($role === 'dosen') ? t('create_class') : t('kelola_kelas') ?></h3>
             <button onclick="closeClassModal()" class="text-gray-500 hover:text-redaccent transition"><i class="fas fa-times text-xl"></i></button>
         </div>
+        <?php if ($role !== 'dosen'): ?>
         <div class="flex border-b border-gray-800 bg-darkbg">
             <button onclick="switchTab('gabung')" id="tab-gabung" class="flex-1 py-3 text-sm font-bold text-white border-b-2 border-blue-500 bg-surface transition"><?= t('gabung_kelas') ?></button>
             <button onclick="switchTab('buat')" id="tab-buat" class="flex-1 py-3 text-sm font-bold text-gray-500 hover:text-gray-300 border-b-2 border-transparent transition"><?= t('buat_kelas') ?></button>
@@ -299,6 +300,24 @@ include 'includes/navbar.php';
                 <button type="submit" name="action_buat" class="w-full mt-2 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white font-bold py-3.5 rounded-xl transition"><?= t('buat_kelas_button') ?></button>
             </form>
         </div>
+        <?php else: ?>
+        <div class="p-6">
+            <div class="bg-darkbg border border-gray-700 rounded-xl p-4 mb-5 flex items-start">
+                <i class="fas fa-info-circle text-redaccent mt-0.5 mr-3"></i>
+                <p class="text-sm text-gray-300 leading-relaxed"><?= t('create_class_only_desc') ?></p>
+            </div>
+            <form action="" method="POST" class="space-y-4">
+                <div><label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider"><?= t('nama_kelas_label') ?></label><input type="text" name="nama_kelas" placeholder="<?= t('nama_kelas_placeholder') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-redaccent transition text-sm" required></div>
+                <div><label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider"><?= t('mata_kuliah_label') ?></label><input type="text" name="mata_pelajaran" placeholder="<?= t('mata_kuliah_placeholder') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-redaccent transition text-sm" required></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider"><?= t('ruang_label') ?></label><input type="text" name="ruang" placeholder="<?= t('ruang_placeholder') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-redaccent transition text-sm" required></div>
+                    <div><label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider"><?= t('nama_dosen_label') ?></label><input type="text" name="nama_dosen" value="<?= htmlspecialchars($user['nama'] ?? '') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-redaccent transition text-sm" required></div>
+                </div>
+                <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
+                <button type="submit" name="action_buat" class="w-full mt-2 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white font-bold py-3.5 rounded-xl transition"><?= t('create_class') ?></button>
+            </form>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -308,6 +327,7 @@ include 'includes/navbar.php';
     function openClassModal() { modal.classList.remove('hidden'); modal.classList.add('flex'); setTimeout(() => { modal.classList.remove('opacity-0'); modalBox.classList.remove('scale-95'); }, 10); }
     function closeClassModal() { modal.classList.add('opacity-0'); modalBox.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300); }
     function switchTab(tabName) {
+        if (document.getElementById('tab-gabung') === null) return;
         const tabGabung = document.getElementById('tab-gabung');
         const tabBuat = document.getElementById('tab-buat');
         const contentGabung = document.getElementById('content-gabung');
