@@ -1,7 +1,7 @@
 <?php
 include 'includes/db.php';
 include 'includes/lang.php';
-include 'includes/audit.php';
+include 'includes/security_workflow.php';
 if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
 $user = $_SESSION['user'];
 $role = $user['role'];
@@ -40,24 +40,76 @@ if (!$task) {
 if ($role === 'dosen' && $task['dosen_id'] != $user['id']) {
     die(t('access_denied_lecturer'));
 }
-if ($role === 'admin' && (trim($_POST['override_reason'] ?? '') === '' || empty($_POST['admin_override_deadline']))) {
-    header("Location: detail_kelas.php?id=" . $task['class_id'] . "&pesan=deadline_invalid");
-    exit();
-}
 
 if ($new_deadline_ts < time()) {
     header("Location: detail_kelas.php?id=" . $task['class_id'] . "&pesan=deadline_invalid");
     exit();
 }
 
-// Update deadline
+$override_code = trim($_POST['break_glass_code'] ?? '');
+$reason = trim($_POST['override_reason'] ?? '');
+
+if ($role === 'admin') {
+    if ($override_code !== '') {
+        $codeRow = verifyBreakGlassCode($conn, $task['dosen_id'], $override_code);
+        if (!$codeRow) {
+            header("Location: detail_kelas.php?id=" . $task['class_id'] . "&pesan=approval_code_invalid");
+            exit();
+        }
+
+        $update = $conn->prepare("UPDATE tasks SET deadline = ? WHERE id = ?");
+        $update->bind_param("si", $new_deadline, $task_id);
+        $update->execute();
+        $update->close();
+
+        $desc = t('activity_deadline_updated_by_teacher_prefix') . "'" . $task['judul'] . "'" . t('activity_deadline_updated_by_teacher_suffix') . $task['nama_kelas'] . ' telah diubah menjadi ' . date('d M Y H:i', strtotime($new_deadline));
+        $stmt_member = $conn->prepare("SELECT mahasiswa_id FROM class_members WHERE class_id = ?");
+        $stmt_member->bind_param("i", $task['class_id']);
+        $stmt_member->execute();
+        $res = $stmt_member->get_result();
+        while ($row = $res->fetch_assoc()) {
+            $ins = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'tugas')");
+            $ins->bind_param("is", $row['mahasiswa_id'], $desc);
+            $ins->execute();
+            $ins->close();
+        }
+        $stmt_member->close();
+
+        $desc_dosen = t('activity_deadline_updated_by_you_prefix') . "'" . $task['judul'] . "' menjadi " . date('d M Y H:i', strtotime($new_deadline));
+        $ins_dosen = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'tugas')");
+        $ins_dosen->bind_param("is", $task['dosen_id'], $desc_dosen);
+        $ins_dosen->execute();
+        $ins_dosen->close();
+
+        consumeBreakGlassCode($conn, $codeRow);
+        logSecurityAction($conn, (int)$user['id'], $role, 'break_glass_update_deadline', 'tasks', (string)$task_id, $reason, ['lecturer_id' => $task['dosen_id'], 'class_id' => $task['class_id']]);
+        header("Location: detail_kelas.php?id=" . $task['class_id'] . "&pesan=deadline_updated");
+        exit();
+    }
+
+    $requestId = createSensitiveRequest(
+        $conn,
+        $user,
+        (int)$task['dosen_id'],
+        (int)$task['class_id'],
+        'tasks',
+        (string)$task_id,
+        'update_deadline',
+        ['deadline' => $new_deadline],
+        $reason !== '' ? $reason : 'Permintaan perubahan deadline oleh admin'
+    );
+    logSecurityAction($conn, (int)$user['id'], $role, 'request_update_deadline', 'tasks', (string)$task_id, $reason !== '' ? $reason : 'Permintaan perubahan deadline oleh admin', ['request_id' => $requestId]);
+    header("Location: detail_kelas.php?id=" . $task['class_id'] . "&pesan=approval_pending");
+    exit();
+}
+
+// Update deadline for lecturer
 $update = $conn->prepare("UPDATE tasks SET deadline = ? WHERE id = ?");
 $update->bind_param("si", $new_deadline, $task_id);
 $update->execute();
 $update->close();
 
-// Kirim notifikasi ke semua mahasiswa di kelas
-    $desc = t('activity_deadline_updated_by_teacher_prefix') . "'" . $task['judul'] . "'" . t('activity_deadline_updated_by_teacher_suffix') . $task['nama_kelas'] . ' telah diubah menjadi ' . date('d M Y H:i', strtotime($new_deadline));
+$desc = t('activity_deadline_updated_by_teacher_prefix') . "'" . $task['judul'] . "'" . t('activity_deadline_updated_by_teacher_suffix') . $task['nama_kelas'] . ' telah diubah menjadi ' . date('d M Y H:i', strtotime($new_deadline));
 $stmt_member = $conn->prepare("SELECT mahasiswa_id FROM class_members WHERE class_id = ?");
 $stmt_member->bind_param("i", $task['class_id']);
 $stmt_member->execute();
@@ -69,25 +121,11 @@ while ($row = $res->fetch_assoc()) {
     $ins->close();
 }
 $stmt_member->close();
-
-// Notifikasi untuk dosen
 $desc_dosen = t('activity_deadline_updated_by_you_prefix') . "'" . $task['judul'] . "' menjadi " . date('d M Y H:i', strtotime($new_deadline));
 $ins_dosen = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'tugas')");
 $ins_dosen->bind_param("is", $user['id'], $desc_dosen);
 $ins_dosen->execute();
 $ins_dosen->close();
-
-if ($role === 'admin') {
-    logSecurityOverride(
-        $conn,
-        (int)$user['id'],
-        $role,
-        'update_deadline',
-        'tasks',
-        (string)$task_id,
-        trim($_POST['override_reason'] ?? '')
-    );
-}
 
 header("Location: detail_kelas.php?id=" . $task['class_id'] . "&pesan=deadline_updated");
 exit;

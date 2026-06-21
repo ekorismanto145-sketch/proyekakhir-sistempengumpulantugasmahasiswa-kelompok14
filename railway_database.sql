@@ -92,3 +92,50 @@ CREATE TABLE reports (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE lecturer_break_glass_codes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    lecturer_id INT NOT NULL,
+    code_hash VARCHAR(255) NOT NULL,
+    issued_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
+    revoked_at DATETIME DEFAULT NULL,
+    last_used_at DATETIME DEFAULT NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE sensitive_change_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    actor_user_id INT NOT NULL,
+    actor_role VARCHAR(20) NOT NULL,
+    lecturer_id INT NOT NULL,
+    class_id INT DEFAULT NULL,
+    target_type VARCHAR(50) NOT NULL,
+    target_id VARCHAR(100) NOT NULL,
+    action_type VARCHAR(100) NOT NULL,
+    payload_json TEXT DEFAULT NULL,
+    reason TEXT NOT NULL,
+    status ENUM('pending', 'approved', 'rejected', 'executed', 'expired') DEFAULT 'pending',
+    approver_user_id INT DEFAULT NULL,
+    break_glass_used TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    approved_at DATETIME DEFAULT NULL,
+    executed_at DATETIME DEFAULT NULL,
+    rejected_at DATETIME DEFAULT NULL,
+    FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE security_audit_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    actor_user_id INT NOT NULL,
+    actor_role VARCHAR(20) NOT NULL,
+    action_type VARCHAR(100) NOT NULL,
+    target_type VARCHAR(100) NOT NULL,
+    target_id VARCHAR(100) NOT NULL,
+    reason TEXT NOT NULL,
+    context_json TEXT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE CASCADE
+);

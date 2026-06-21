@@ -71,6 +71,7 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
 
             <?php if ($current_role === 'dosen'): ?>
                 <a href="rekap_nilai.php" class="flex items-center p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition"><i class="fas fa-file-pdf mr-3 w-5 text-center"></i> <?= t('rekap_nilai') ?></a>
+                <a href="approval_console.php" class="flex items-center p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition"><i class="fas fa-shield-alt mr-3 w-5 text-center"></i> Console Persetujuan</a>
             <?php endif; ?>
 
             <?php if ($current_role === 'admin'): ?>

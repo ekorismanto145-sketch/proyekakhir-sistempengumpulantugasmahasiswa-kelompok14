@@ -266,6 +266,16 @@ include 'includes/navbar.php';
             <i class="fas fa-exclamation-circle mr-2"></i> <?= t('task_deadline_invalid') ?>
         </div>
     <?php endif; ?>
+    <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'approval_pending'): ?>
+        <div class="mb-4 px-4 py-3 rounded-xl border bg-yellow-500/20 border-yellow-500 text-yellow-300">
+            <i class="fas fa-shield-alt mr-2"></i> Permintaan sensitif sudah dikirim ke dosen untuk persetujuan.
+        </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'approval_code_invalid'): ?>
+        <div class="mb-4 px-4 py-3 rounded-xl border bg-red-500/20 border-red-500 text-red-300">
+            <i class="fas fa-times-circle mr-2"></i> Break-glass code tidak valid atau sudah kedaluwarsa.
+        </div>
+    <?php endif; ?>
     <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'materi_sukses'): ?>
         <div class="mb-4 px-4 py-3 rounded-xl border bg-green-500/20 border-green-500 text-green-300">
             <i class="fas fa-check-circle mr-2"></i> <?= t('material_uploaded_success') ?>
@@ -480,11 +490,9 @@ include 'includes/navbar.php';
             </div>
             <?php if ($role === 'admin'): ?>
                 <div class="space-y-2">
-                    <label class="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        <input type="checkbox" name="admin_override_deadline" value="1" class="rounded border-gray-600 bg-darkbg">
-                        <span>Aktifkan override admin</span>
-                    </label>
-                    <input type="text" name="override_reason" placeholder="Alasan override" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:border-yellow-500 transition text-sm">
+                    <p class="text-xs text-gray-400">Admin bisa ajukan approval ke dosen atau pakai break-glass code yang diberikan dosen.</p>
+                    <input type="text" name="break_glass_code" placeholder="Break-glass code (opsional)" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:border-yellow-500 transition text-sm">
+                    <input type="text" name="override_reason" placeholder="Alasan perubahan" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:border-yellow-500 transition text-sm">
                 </div>
             <?php endif; ?>
             <div class="flex justify-end gap-3 pt-3">

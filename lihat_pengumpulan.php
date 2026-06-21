@@ -1,7 +1,7 @@
 <?php
 include 'includes/db.php';
 include 'includes/lang.php';
-include 'includes/audit.php';
+include 'includes/security_workflow.php';
 if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
 $user = $_SESSION['user'];
 $role = $user['role'];
@@ -46,12 +46,6 @@ if ($role === 'dosen' && $task['dosen_id'] != $user['id']) {
     die(t('access_denied_lecturer'));
 }
 
-function isAdminOverrideAction($role, $post, $action_key) {
-    return $role === 'admin'
-        && !empty($post[$action_key])
-        && trim($post['override_reason'] ?? '') !== '';
-}
-
 // Proses hapus pengumpulan tugas mahasiswa (dosen/admin)
 if (isset($_POST['hapus_pengumpulan'])) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
@@ -64,10 +58,32 @@ if (isset($_POST['hapus_pengumpulan'])) {
         exit();
     }
 
-    $is_override = isAdminOverrideAction($role, $_POST, 'admin_override_delete');
-    if ($role === 'admin' && !$is_override) {
-        header("Location: lihat_pengumpulan.php?task_id=$task_id&pesan=hapus_gagal");
-        exit();
+    $override_code = trim($_POST['break_glass_code'] ?? '');
+    $reason = trim($_POST['override_reason'] ?? '');
+
+    if ($role === 'admin') {
+        if ($override_code !== '') {
+            $codeRow = verifyBreakGlassCode($conn, $task['dosen_id'], $override_code);
+            if (!$codeRow) {
+                header("Location: lihat_pengumpulan.php?task_id=$task_id&pesan=hapus_gagal");
+                exit();
+            }
+        } else {
+            $requestId = createSensitiveRequest(
+                $conn,
+                $user,
+                (int)$task['dosen_id'],
+                (int)$task['class_id'],
+                'task_submissions',
+                (string)$submission_id,
+                'delete_submission',
+                ['task_id' => $task_id, 'submission_id' => $submission_id],
+                $reason !== '' ? $reason : 'Permintaan hapus submission oleh admin'
+            );
+            logSecurityAction($conn, (int)$user['id'], $role, 'request_delete_submission', 'task_submissions', (string)$submission_id, $reason !== '' ? $reason : 'Permintaan hapus submission oleh admin', ['request_id' => $requestId]);
+            header("Location: lihat_pengumpulan.php?task_id=$task_id&pesan=approval_pending");
+            exit();
+        }
     }
 
     $cek = $conn->prepare("SELECT id, mahasiswa_id, file_path FROM task_submissions WHERE id = ? AND task_id = ?");
@@ -92,22 +108,16 @@ if (isset($_POST['hapus_pengumpulan'])) {
     $del->close();
 
     if ($deleted) {
-        if ($is_override) {
-            logSecurityOverride(
-                $conn,
-                (int)$user['id'],
-                $role,
-                'delete_submission',
-                'task_submissions',
-                (string)$submission_id,
-                trim($_POST['override_reason'])
-            );
-        }
         $desc_hapus = "Pengumpulan tugas '" . $task['judul'] . "' telah dihapus oleh dosen/admin. Silakan unggah ulang jika diminta.";
         $ins_hapus = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'tugas')");
         $ins_hapus->bind_param("is", $submission['mahasiswa_id'], $desc_hapus);
         $ins_hapus->execute();
         $ins_hapus->close();
+
+        if ($role === 'admin' && !empty($codeRow)) {
+            consumeBreakGlassCode($conn, $codeRow);
+            logSecurityAction($conn, (int)$user['id'], $role, 'break_glass_delete_submission', 'task_submissions', (string)$submission_id, $reason !== '' ? $reason : 'Break-glass delete submission', ['task_id' => $task_id]);
+        }
 
         header("Location: lihat_pengumpulan.php?task_id=$task_id&pesan=hapus_sukses");
         exit();
@@ -126,10 +136,32 @@ if (isset($_POST['simpan_nilai'])) {
     $submission_id = (int)$_POST['submission_id'];
     $nilai = !empty($_POST['nilai']) ? (int)$_POST['nilai'] : null;
     $feedback = trim($_POST['feedback'] ?? '');
-    $is_override = isAdminOverrideAction($role, $_POST, 'admin_override_grade');
-    if ($role === 'admin' && !$is_override) {
-        header("Location: lihat_pengumpulan.php?task_id=$task_id&pesan=hapus_gagal");
-        exit();
+    $override_code = trim($_POST['break_glass_code'] ?? '');
+    $reason = trim($_POST['override_reason'] ?? '');
+
+    if ($role === 'admin') {
+        if ($override_code !== '') {
+            $codeRow = verifyBreakGlassCode($conn, $task['dosen_id'], $override_code);
+            if (!$codeRow) {
+                header("Location: lihat_pengumpulan.php?task_id=$task_id&pesan=hapus_gagal");
+                exit();
+            }
+        } else {
+            $requestId = createSensitiveRequest(
+                $conn,
+                $user,
+                (int)$task['dosen_id'],
+                (int)$task['class_id'],
+                'task_submissions',
+                (string)$submission_id,
+                'grade_submission',
+                ['nilai' => $nilai, 'feedback' => $feedback],
+                $reason !== '' ? $reason : 'Permintaan penilaian submission oleh admin'
+            );
+            logSecurityAction($conn, (int)$user['id'], $role, 'request_grade_submission', 'task_submissions', (string)$submission_id, $reason !== '' ? $reason : 'Permintaan penilaian submission oleh admin', ['request_id' => $requestId]);
+            header("Location: lihat_pengumpulan.php?task_id=$task_id&pesan=approval_pending");
+            exit();
+        }
     }
     
     if ($nilai !== null && ($nilai < 0 || $nilai > 100)) {
@@ -165,18 +197,11 @@ if (isset($_POST['simpan_nilai'])) {
     $update->execute();
     $update->close();
 
-    if ($is_override) {
-        logSecurityOverride(
-            $conn,
-            (int)$user['id'],
-            $role,
-            'grade_submission',
-            'task_submissions',
-            (string)$submission_id,
-            trim($_POST['override_reason'])
-        );
+    if ($role === 'admin' && !empty($codeRow)) {
+        consumeBreakGlassCode($conn, $codeRow);
+        logSecurityAction($conn, (int)$user['id'], $role, 'break_glass_grade_submission', 'task_submissions', (string)$submission_id, $reason !== '' ? $reason : 'Break-glass grade submission', ['task_id' => $task_id, 'nilai' => $nilai]);
     }
-    
+
     // Notifikasi ke mahasiswa
     $desc = "Dosen telah memberikan nilai untuk tugas '" . $task['judul'] . "'. Nilai: " . ($nilai ?? 'Belum ada nilai');
     $ins = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'tugas')");
@@ -231,6 +256,11 @@ include 'includes/navbar.php';
             <i class="fas fa-exclamation-triangle mr-2"></i> <?= t('submission_delete_failed') ?>
         </div>
     <?php endif; ?>
+    <?php if(isset($_GET['pesan']) && $_GET['pesan'] == 'approval_pending'): ?>
+        <div class="mb-6 px-4 py-3 bg-yellow-500/20 border border-yellow-500 text-yellow-300 rounded-xl">
+            <i class="fas fa-shield-alt mr-2"></i> Permintaan admin menunggu persetujuan dosen.
+        </div>
+    <?php endif; ?>
 
     <div class="bg-surface border border-gray-800 rounded-2xl overflow-hidden shadow-xl">
         <div class="overflow-x-auto">
@@ -271,11 +301,8 @@ include 'includes/navbar.php';
                                        class="w-48 bg-darkbg border border-gray-700 text-white px-2 py-1 rounded text-sm">
                                 <?php if ($role === 'admin'): ?>
                                     <div class="mt-2 space-y-2">
-                                        <label class="flex items-center gap-2 text-[11px] text-gray-400">
-                                            <input type="checkbox" name="admin_override_grade" value="1" class="rounded border-gray-600 bg-darkbg">
-                                            <span>Override admin</span>
-                                        </label>
-                                        <input type="text" name="override_reason" placeholder="Alasan override" class="w-48 bg-darkbg border border-gray-700 text-white px-2 py-1 rounded text-xs">
+                                        <input type="text" name="break_glass_code" placeholder="Break-glass code (opsional)" class="w-48 bg-darkbg border border-gray-700 text-white px-2 py-1 rounded text-xs">
+                                        <input type="text" name="override_reason" placeholder="Alasan perubahan" class="w-48 bg-darkbg border border-gray-700 text-white px-2 py-1 rounded text-xs">
                                     </div>
                                 <?php endif; ?>
                             </td>
@@ -286,9 +313,6 @@ include 'includes/navbar.php';
                                 <button type="submit" name="hapus_pengumpulan" onclick="return confirm('<?= t('delete_submission_confirm') ?>');" class="px-3 py-1 bg-red-600 hover:bg-red-500 rounded text-white text-xs">
                                     <i class="fas fa-trash-alt mr-1"></i> <?= t('delete') ?>
                                 </button>
-                                <?php if ($role === 'admin'): ?>
-                                    <input type="hidden" name="admin_override_delete" value="1">
-                                <?php endif; ?>
                             </td>
                         </form>
                     </tr>
