@@ -105,8 +105,15 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
         <?php
         $currentLang = $_SESSION['lang'] ?? 'id';
         $languageReturnUrl = $_SERVER['REQUEST_URI'] ?? '/index.php';
-        $indonesianUrl = 'set_language.php?' . http_build_query(['lang' => 'id', 'return' => $languageReturnUrl]);
-        $englishUrl = 'set_language.php?' . http_build_query(['lang' => 'en', 'return' => $languageReturnUrl]);
+        $currentUrlParts = parse_url($languageReturnUrl);
+        $currentPath = $currentUrlParts['path'] ?? '/index.php';
+        $currentQuery = [];
+        if (!empty($currentUrlParts['query'])) {
+            parse_str($currentUrlParts['query'], $currentQuery);
+        }
+        unset($currentQuery['toggle_lang'], $currentQuery['lang']);
+        $indonesianUrl = $currentPath . '?' . http_build_query(array_merge($currentQuery, ['toggle_lang' => 'id']));
+        $englishUrl = $currentPath . '?' . http_build_query(array_merge($currentQuery, ['toggle_lang' => 'en']));
         ?>
         <button id="themeToggleBtn" type="button" onclick="toggleTheme()" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-700 bg-darkbg text-gray-300 hover:bg-gray-800 transition text-sm font-medium">
             <i id="themeToggleIcon" class="fas fa-moon text-blue-400"></i>
