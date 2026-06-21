@@ -29,9 +29,8 @@ if (isset($_POST['simpan_profil'])) {
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === 0) {
         $ekstensi = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
         $nama_file_baru = 'profil_' . $user['id'] . '_' . time() . '.' . $ekstensi;
-        $folder_tujuan = 'uploads/';
-        if (!is_dir($folder_tujuan)) mkdir($folder_tujuan, 0777, true);
-        if (move_uploaded_file($_FILES['foto']['tmp_name'], $folder_tujuan . $nama_file_baru)) {
+        $folder_tujuan = storageDirectory();
+        if (move_uploaded_file($_FILES['foto']['tmp_name'], $folder_tujuan . DIRECTORY_SEPARATOR . $nama_file_baru)) {
             $stmt = $conn->prepare("UPDATE users SET foto_profil = ? WHERE id = ?");
             $stmt->bind_param("si", $nama_file_baru, $user['id']);
             $stmt->execute();

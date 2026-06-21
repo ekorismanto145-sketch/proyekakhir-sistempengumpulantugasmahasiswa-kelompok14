@@ -57,7 +57,8 @@ if (isset($_POST['batalkan_pengumpulan']) && $role === 'mahasiswa') {
     if (!$sub) die("Anda belum mengumpulkan tugas ini.");
     if (array_key_exists('nilai', $sub) && $sub['nilai'] !== null) die("Tugas sudah dinilai, tidak dapat dibatalkan.");
     
-    if (file_exists($sub['file_path'])) unlink($sub['file_path']);
+    $absolute_file_path = storageAbsolutePath($sub['file_path']);
+    if ($absolute_file_path && is_file($absolute_file_path)) unlink($absolute_file_path);
     $del = $conn->prepare("DELETE FROM task_submissions WHERE task_id = ? AND mahasiswa_id = ?");
     $del->bind_param("ii", $task_id, $user['id']);
     $del->execute();
@@ -142,10 +143,9 @@ if (isset($_POST['kirim_tugas']) && $role === 'mahasiswa') {
             exit();
         }
         $nama_simpan = bin2hex(random_bytes(16)) . '.bin';
-        $folder = 'uploads/tugas/';
-        if (!is_dir($folder)) mkdir($folder, 0777, true);
-        $file_path = $folder . $nama_simpan;
-        if (move_uploaded_file($tmp_name, $file_path)) {
+        $file_path = storageRelativePath('tugas', $nama_simpan);
+        $absolute_file_path = storageDirectory('tugas') . DIRECTORY_SEPARATOR . $nama_simpan;
+        if (move_uploaded_file($tmp_name, $absolute_file_path)) {
             $stmt_sub = $conn->prepare("INSERT INTO task_submissions (task_id, mahasiswa_id, file_path, original_name) VALUES (?, ?, ?, ?)");
             $stmt_sub->bind_param("iiss", $task_id, $user['id'], $file_path, $nama_file);
             $stmt_sub->execute();

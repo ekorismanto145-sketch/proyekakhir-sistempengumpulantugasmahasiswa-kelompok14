@@ -43,8 +43,9 @@ if (!$allowed) {
     die(t('access_denied_class'));
 }
 
-$full_path = __DIR__ . '/' . $attachment['resolved_path'];
-if (!$attachment['resolved_path'] || !is_file($full_path)) {
+$full_path = storageAbsolutePath($attachment['resolved_path']);
+if (!$attachment['resolved_path'] || !$full_path || !is_file($full_path)) {
+    error_log('[task-attachment-preview-missing] attachment_id=' . $attachment_id . ' stored_path=' . ($attachment['resolved_path'] ?? 'null') . ' resolved_path=' . ($full_path ?? 'null'));
     die(t('file_not_found_server'));
 }
 

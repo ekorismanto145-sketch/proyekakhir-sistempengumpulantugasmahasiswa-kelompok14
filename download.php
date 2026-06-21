@@ -39,8 +39,9 @@ if ($role !== 'admin' && $role !== 'dosen') {
     die(t('access_denied'));
 }
 
-$full_path = __DIR__ . '/' . $sub['file_path'];
-if (!file_exists($full_path)) {
+$full_path = storageAbsolutePath($sub['file_path']);
+if (!$full_path || !is_file($full_path)) {
+    error_log('[submission-download-missing] submission_id=' . $submission_id . ' stored_path=' . $sub['file_path'] . ' resolved_path=' . ($full_path ?? 'null'));
     die(t('file_not_found_server'));
 }
 

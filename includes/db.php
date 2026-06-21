@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/storage.php';
+
 function env_value(array $keys, $default = null) {
     foreach ($keys as $key) {
         $value = getenv($key);

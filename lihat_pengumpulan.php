@@ -97,8 +97,9 @@ if (isset($_POST['hapus_pengumpulan'])) {
         exit();
     }
 
-    if (!empty($submission['file_path']) && file_exists($submission['file_path'])) {
-        @unlink($submission['file_path']);
+    $submission_path = storageAbsolutePath($submission['file_path'] ?? null);
+    if ($submission_path && is_file($submission_path)) {
+        @unlink($submission_path);
     }
 
     $del = $conn->prepare("DELETE FROM task_submissions WHERE id = ? AND task_id = ?");

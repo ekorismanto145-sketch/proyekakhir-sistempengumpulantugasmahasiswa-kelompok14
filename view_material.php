@@ -43,8 +43,9 @@ if (!$allowed) {
     die(t('access_denied_class'));
 }
 
-$full_path = __DIR__ . '/' . $material['file_path'];
-if (!file_exists($full_path)) {
+$full_path = storageAbsolutePath($material['file_path']);
+if (!$full_path || !is_file($full_path)) {
+    error_log('[material-preview-missing] material_id=' . $material_id . ' stored_path=' . $material['file_path'] . ' resolved_path=' . ($full_path ?? 'null'));
     die(t('file_not_found_server'));
 }
 

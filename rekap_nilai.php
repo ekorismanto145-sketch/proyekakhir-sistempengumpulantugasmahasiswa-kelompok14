@@ -159,23 +159,51 @@ include 'includes/navbar.php';
                 </div>
             </header>
 
+            <div class="table-tools no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3 border-b border-gray-800 bg-darkbg/40">
+                <div>
+                    <p id="recapResultCount" class="text-xs font-bold text-gray-300"></p>
+                    <p class="text-[11px] text-gray-500 mt-0.5"><?= t('print_filtered_hint') ?></p>
+                </div>
+                <button type="button" id="resetRecapFilters" class="px-3 py-2 rounded-lg border border-gray-700 hover:border-blue-500 text-xs font-bold text-gray-300 hover:text-white transition">
+                    <i class="fas fa-rotate-left mr-1.5"></i><?= t('reset_filters') ?>
+                </button>
+            </div>
             <div class="overflow-x-auto">
                 <table class="recap-table w-full text-left border-collapse min-w-[920px]">
                     <thead>
                         <tr class="text-xs uppercase tracking-wider text-gray-400 border-b border-gray-700 bg-darkbg/60">
-                            <th class="py-3 px-4"><?= t('student_name') ?></th>
-                            <th class="py-3 px-4"><?= t('task_name') ?></th>
-                            <th class="py-3 px-4 text-center"><?= t('score') ?></th>
-                            <th class="py-3 px-4 text-center"><?= t('letter_grade') ?></th>
-                            <th class="py-3 px-4 text-center"><?= t('average_grade') ?></th>
-                            <th class="py-3 px-4"><?= t('recap_notes') ?></th>
+                            <?php
+                            $recap_columns = [
+                                ['label' => t('student_name'), 'type' => 'text'],
+                                ['label' => t('task_name'), 'type' => 'text'],
+                                ['label' => t('score'), 'type' => 'number'],
+                                ['label' => t('letter_grade'), 'type' => 'grade'],
+                                ['label' => t('average_grade'), 'type' => 'number'],
+                                ['label' => t('recap_notes'), 'type' => 'text']
+                            ];
+                            foreach ($recap_columns as $index => $column): ?>
+                                <th class="py-3 px-4 <?= in_array($index, [2, 3, 4], true) ? 'text-center' : '' ?>">
+                                    <button type="button" class="recap-sort inline-flex items-center gap-1.5 hover:text-white transition" data-column="<?= $index ?>" data-type="<?= $column['type'] ?>" title="<?= t('sort_column') ?>">
+                                        <span><?= htmlspecialchars($column['label']) ?></span>
+                                        <i class="sort-icon fas fa-sort text-gray-600"></i>
+                                    </button>
+                                </th>
+                            <?php endforeach; ?>
+                        </tr>
+                        <tr class="table-filter-row no-print border-b border-gray-700 bg-darkbg/80">
+                            <th class="p-2"><input type="search" data-filter="student" placeholder="<?= t('filter_student') ?>" class="recap-filter w-full rounded-lg border border-gray-700 bg-surface px-2.5 py-2 text-xs text-white placeholder:text-gray-600"></th>
+                            <th class="p-2"><input type="search" data-filter="task" placeholder="<?= t('filter_task') ?>" class="recap-filter w-full rounded-lg border border-gray-700 bg-surface px-2.5 py-2 text-xs text-white placeholder:text-gray-600"></th>
+                            <th class="p-2"><div class="flex gap-1"><input type="number" min="0" max="100" data-filter="scoreMin" placeholder="Min" class="recap-filter w-1/2 rounded-lg border border-gray-700 bg-surface px-2 py-2 text-xs text-white"><input type="number" min="0" max="100" data-filter="scoreMax" placeholder="Max" class="recap-filter w-1/2 rounded-lg border border-gray-700 bg-surface px-2 py-2 text-xs text-white"></div></th>
+                            <th class="p-2"><select data-filter="grade" class="recap-filter w-full rounded-lg border border-gray-700 bg-surface px-2 py-2 text-xs text-white"><option value=""><?= t('all_grades') ?></option><?php foreach (['A', 'B+', 'B', 'C+', 'C', 'C-', 'E'] as $grade): ?><option value="<?= $grade ?>"><?= $grade ?></option><?php endforeach; ?></select></th>
+                            <th class="p-2"><div class="flex gap-1"><input type="number" min="0" max="100" data-filter="averageMin" placeholder="Min" class="recap-filter w-1/2 rounded-lg border border-gray-700 bg-surface px-2 py-2 text-xs text-white"><input type="number" min="0" max="100" data-filter="averageMax" placeholder="Max" class="recap-filter w-1/2 rounded-lg border border-gray-700 bg-surface px-2 py-2 text-xs text-white"></div></th>
+                            <th class="p-2"><input type="search" data-filter="notes" placeholder="<?= t('filter_notes') ?>" class="recap-filter w-full rounded-lg border border-gray-700 bg-surface px-2.5 py-2 text-xs text-white placeholder:text-gray-600"></th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="recapTableBody">
                         <?php if (!$recap_rows): ?>
-                            <tr><td colspan="6" class="py-10 text-center text-gray-500"><?= t('no_graded_records') ?></td></tr>
-                        <?php else: foreach ($recap_rows as $row): ?>
-                            <tr class="border-b border-gray-800 last:border-b-0">
+                            <tr class="empty-recap-row"><td colspan="6" class="py-10 text-center text-gray-500"><?= t('no_graded_records') ?></td></tr>
+                        <?php else: foreach ($recap_rows as $row_index => $row): ?>
+                            <tr class="recap-row border-b border-gray-800 last:border-b-0" data-index="<?= $row_index ?>" data-student="<?= htmlspecialchars(mb_strtolower($row['student_name']), ENT_QUOTES) ?>" data-task="<?= htmlspecialchars(mb_strtolower($row['task_name']), ENT_QUOTES) ?>" data-score="<?= $row['score'] !== null ? (float)$row['score'] : '' ?>" data-grade="<?= htmlspecialchars($row['grade'], ENT_QUOTES) ?>" data-average="<?= $row['average'] !== null ? (float)$row['average'] : '' ?>" data-notes="<?= htmlspecialchars(mb_strtolower($row['notes']), ENT_QUOTES) ?>">
                                 <td class="py-3 px-4 text-sm font-semibold text-white"><?= htmlspecialchars($row['student_name']) ?></td>
                                 <td class="py-3 px-4 text-sm text-gray-300"><?= htmlspecialchars($row['task_name']) ?></td>
                                 <td class="py-3 px-4 text-sm text-center font-bold text-blue-400"><?= $row['score'] !== null ? htmlspecialchars($row['score']) : '-' ?></td>
@@ -184,6 +212,7 @@ include 'includes/navbar.php';
                                 <td class="py-3 px-4 text-sm text-gray-400 max-w-[260px] whitespace-normal"><?= $row['notes'] !== '' ? nl2br(htmlspecialchars($row['notes'])) : '-' ?></td>
                             </tr>
                         <?php endforeach; endif; ?>
+                        <tr id="filteredEmptyRow" hidden><td colspan="6" class="py-10 text-center text-gray-500"><?= t('no_filter_results') ?></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -193,6 +222,11 @@ include 'includes/navbar.php';
 </main>
 
 <style>
+.recap-sort {
+    background: transparent;
+    border: 0;
+    color: inherit;
+}
 @page {
     size: A4 landscape;
     margin: 14mm;
@@ -273,11 +307,117 @@ include 'includes/navbar.php';
         border-color: #9db8ed !important;
         color: #173e87 !important;
     }
+    .sort-icon {
+        display: none !important;
+    }
 }
 </style>
 <?php if ($class_info): ?>
 <script>
     document.title = <?= json_encode(t('rekap_nilai') . ' - ' . $class_info['nama_kelas'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
+
+    const recapBody = document.getElementById('recapTableBody');
+    const recapRows = Array.from(recapBody.querySelectorAll('.recap-row'));
+    const recapFilters = Array.from(document.querySelectorAll('.recap-filter'));
+    const sortButtons = Array.from(document.querySelectorAll('.recap-sort'));
+    const filteredEmptyRow = document.getElementById('filteredEmptyRow');
+    const resultCount = document.getElementById('recapResultCount');
+    const gradeRank = { E: 0, 'C-': 1, C: 2, 'C+': 3, B: 4, 'B+': 5, A: 6 };
+    let sortState = null;
+
+    function filterValue(name) {
+        return document.querySelector(`[data-filter="${name}"]`)?.value.trim() || '';
+    }
+
+    function numericMatch(value, min, max) {
+        if (value === '') return min === '' && max === '';
+        const number = Number(value);
+        return (min === '' || number >= Number(min)) && (max === '' || number <= Number(max));
+    }
+
+    function updateResultCount(shown) {
+        resultCount.textContent = <?= json_encode(t('showing_rows'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>
+            .replace('{shown}', shown)
+            .replace('{total}', recapRows.length);
+    }
+
+    function applyRecapFilters() {
+        const student = filterValue('student').toLocaleLowerCase();
+        const task = filterValue('task').toLocaleLowerCase();
+        const notes = filterValue('notes').toLocaleLowerCase();
+        const grade = filterValue('grade');
+        let shown = 0;
+
+        recapRows.forEach(row => {
+            const visible = row.dataset.student.includes(student)
+                && row.dataset.task.includes(task)
+                && row.dataset.notes.includes(notes)
+                && (!grade || row.dataset.grade === grade)
+                && numericMatch(row.dataset.score, filterValue('scoreMin'), filterValue('scoreMax'))
+                && numericMatch(row.dataset.average, filterValue('averageMin'), filterValue('averageMax'));
+            row.hidden = !visible;
+            if (visible) shown++;
+        });
+
+        if (recapRows.length) filteredEmptyRow.hidden = shown !== 0;
+        updateResultCount(shown);
+    }
+
+    function sortableValue(row, column, type) {
+        const keys = ['student', 'task', 'score', 'grade', 'average', 'notes'];
+        const value = row.dataset[keys[column]] ?? '';
+        if (type === 'number') return value === '' ? null : Number(value);
+        if (type === 'grade') return gradeRank[value] ?? -1;
+        return value;
+    }
+
+    function sortRecap(column, type, direction) {
+        const factor = direction === 'asc' ? 1 : -1;
+        const sorted = [...recapRows].sort((a, b) => {
+            const first = sortableValue(a, column, type);
+            const second = sortableValue(b, column, type);
+            if (first === null || first === '') return second === null || second === '' ? Number(a.dataset.index) - Number(b.dataset.index) : 1;
+            if (second === null || second === '') return -1;
+            if (type === 'text') {
+                const compared = first.localeCompare(second, '<?= ($_SESSION['lang'] ?? 'id') === 'en' ? 'en' : 'id' ?>', { sensitivity: 'base', numeric: true });
+                return compared !== 0 ? compared * factor : Number(a.dataset.index) - Number(b.dataset.index);
+            }
+            return first === second ? Number(a.dataset.index) - Number(b.dataset.index) : (first - second) * factor;
+        });
+        sorted.forEach(row => recapBody.insertBefore(row, filteredEmptyRow));
+    }
+
+    recapFilters.forEach(control => {
+        control.addEventListener(control.tagName === 'SELECT' ? 'change' : 'input', applyRecapFilters);
+    });
+
+    sortButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const column = Number(button.dataset.column);
+            const direction = sortState?.column === column && sortState.direction === 'asc' ? 'desc' : 'asc';
+            sortState = { column, direction };
+            sortRecap(column, button.dataset.type, direction);
+            sortButtons.forEach(item => {
+                const icon = item.querySelector('.sort-icon');
+                const active = Number(item.dataset.column) === column;
+                icon.className = `sort-icon fas ${active ? (direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'} ${active ? 'text-blue-400' : 'text-gray-600'}`;
+                item.setAttribute('aria-sort', active ? (direction === 'asc' ? 'ascending' : 'descending') : 'none');
+            });
+        });
+    });
+
+    document.getElementById('resetRecapFilters').addEventListener('click', () => {
+        recapFilters.forEach(control => { control.value = ''; });
+        sortState = null;
+        [...recapRows].sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index)).forEach(row => recapBody.insertBefore(row, filteredEmptyRow));
+        sortButtons.forEach(button => {
+            button.querySelector('.sort-icon').className = 'sort-icon fas fa-sort text-gray-600';
+            button.setAttribute('aria-sort', 'none');
+        });
+        applyRecapFilters();
+    });
+
+    updateResultCount(recapRows.length);
 </script>
 <?php endif; ?>
 </body>

@@ -50,7 +50,7 @@ function uploadedFiles($field) {
 }
 function removeStoredFiles($paths) {
     foreach (array_unique(array_filter($paths)) as $path) {
-        $full_path = __DIR__ . '/' . ltrim($path, '/\\');
+        $full_path = storageAbsolutePath($path);
         if (is_file($full_path)) {
             @unlink($full_path);
         }
@@ -122,12 +122,12 @@ if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) 
         die(t('material_file_required'));
     }
 
-    $folder = 'uploads/materi/';
-    if (!is_dir($folder)) {
-        if (!mkdir($folder, 0777, true) && !is_dir($folder)) {
-            header("Location: detail_kelas.php?id=$class_id&pesan=materi_gagal");
-            exit();
-        }
+    try {
+        $material_directory = storageDirectory('materi');
+    } catch (Throwable $e) {
+        error_log('[material-storage] ' . $e->getMessage());
+        header("Location: detail_kelas.php?id=$class_id&pesan=materi_gagal");
+        exit();
     }
 
     $prepared_materials = [];
@@ -151,8 +151,10 @@ if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) 
 
         $original_name = basename($file['name']);
         $file_ext = strtolower(pathinfo($original_name, PATHINFO_EXTENSION) ?: 'bin');
-        $file_path = $folder . bin2hex(random_bytes(16)) . '.' . $file_ext;
-        if (!move_uploaded_file($file['tmp_name'], $file_path)) {
+        $stored_name = bin2hex(random_bytes(16)) . '.' . $file_ext;
+        $file_path = storageRelativePath('materi', $stored_name);
+        $absolute_file_path = $material_directory . DIRECTORY_SEPARATOR . $stored_name;
+        if (!move_uploaded_file($file['tmp_name'], $absolute_file_path)) {
             removeStoredFiles($saved_paths);
             header("Location: detail_kelas.php?id=$class_id&pesan=materi_gagal");
             exit();
@@ -476,8 +478,10 @@ if (isset($_POST['buat_tugas']) && ($role === 'dosen' || $role === 'admin')) {
             'application/msword',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ];
-        $task_folder = 'uploads/task_materials/';
-        if (!is_dir($task_folder) && !mkdir($task_folder, 0777, true) && !is_dir($task_folder)) {
+        try {
+            $task_directory = storageDirectory('task_materials');
+        } catch (Throwable $e) {
+            error_log('[task-material-storage] ' . $e->getMessage());
             header("Location: detail_kelas.php?id=$class_id&pesan=task_material_failed");
             exit();
         }
@@ -497,8 +501,10 @@ if (isset($_POST['buat_tugas']) && ($role === 'dosen' || $role === 'admin')) {
             }
             $original_task_name = basename($file['name']);
             $task_extension = strtolower(pathinfo($original_task_name, PATHINFO_EXTENSION) ?: 'bin');
-            $stored_task_path = $task_folder . bin2hex(random_bytes(16)) . '.' . $task_extension;
-            if (!move_uploaded_file($file['tmp_name'], $stored_task_path)) {
+            $stored_task_name = bin2hex(random_bytes(16)) . '.' . $task_extension;
+            $stored_task_path = storageRelativePath('task_materials', $stored_task_name);
+            $absolute_task_path = $task_directory . DIRECTORY_SEPARATOR . $stored_task_name;
+            if (!move_uploaded_file($file['tmp_name'], $absolute_task_path)) {
                 removeStoredFiles($saved_task_paths);
                 header("Location: detail_kelas.php?id=$class_id&pesan=task_material_failed");
                 exit();
