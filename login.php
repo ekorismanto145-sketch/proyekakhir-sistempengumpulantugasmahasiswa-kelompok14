@@ -101,18 +101,44 @@ if (isset($_POST['login'])) {
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { transition: background 0.3s, color 0.3s; background: radial-gradient(circle at 20% 30%, #0a0a0a, #000000); color: #f0f0f0; }
-        html.light-mode body { background: radial-gradient(circle at 20% 30%, #e0e0e0, #b0b0b0); color: #1f2937; }
+        body { transition: background 0.3s, color 0.3s; background: radial-gradient(circle at 20% 30%, #141b2d, #0b1020); color: #f0f0f0; }
+        html.light-mode body { background: radial-gradient(circle at 20% 30%, #f4efe4, #e8dcc8); color: #1f2937; }
         .glass-card {
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(17, 24, 39, 0.55);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: background 0.3s, border 0.3s;
         }
         html.light-mode .glass-card {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 250, 241, 0.88);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(221, 212, 195, 0.9);
+        }
+        html.light-mode .toggle-btn { color: #334155 !important; }
+        html.light-mode .toggle-btn:hover { color: #111827 !important; }
+        html.light-mode .text-gray-200 { color: #475569 !important; }
+        html.light-mode .text-gray-300 { color: #475569 !important; }
+        html.light-mode .text-gray-400 { color: #64748b !important; }
+        html.light-mode .bg-white\/10 { background: rgba(255, 250, 241, 0.9) !important; }
+        html.light-mode .bg-blue-600 { background: #2563eb !important; color: #ffffff !important; }
+        html.light-mode .hover\:bg-blue-700:hover { background: #1d4ed8 !important; }
+        html.light-mode .border-gray-600 { border-color: rgba(210, 198, 179, 0.95) !important; }
+        html.light-mode input {
+            background: rgba(255, 250, 241, 0.98) !important;
+            border-color: rgba(210, 198, 179, 0.95) !important;
+            color: #111827 !important;
+        }
+        html.light-mode input::placeholder { color: #94a3b8 !important; }
+        html.light-mode #appTitle { color: #2563eb !important; }
+        html.light-mode #subTitle,
+        html.light-mode #emailLabel,
+        html.light-mode #passLabel,
+        html.light-mode #registerLink { color: #475569 !important; }
+        html.light-mode #registerLink a { color: #2563eb !important; }
+        html.light-mode #errorMsg {
+            background: rgba(220, 38, 38, 0.10) !important;
+            border-color: rgba(220, 38, 38, 0.55) !important;
+            color: #b91c1c !important;
         }
         .toggle-btn { cursor: pointer; transition: all 0.2s; }
         .toggle-btn:hover { opacity: 0.8; }
@@ -160,9 +186,11 @@ if (isset($_POST['login'])) {
         function applyTheme(theme) {
             if (theme === 'light') {
                 document.documentElement.classList.add('light-mode');
+                document.body.classList.remove('dark');
                 document.querySelector('#themeToggle i').classList.remove('fa-moon'); document.querySelector('#themeToggle i').classList.add('fa-sun');
             } else {
                 document.documentElement.classList.remove('light-mode');
+                document.body.classList.add('dark');
                 document.querySelector('#themeToggle i').classList.remove('fa-sun'); document.querySelector('#themeToggle i').classList.add('fa-moon');
             }
             localStorage.setItem('theme', theme);

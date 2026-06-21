@@ -23,23 +23,23 @@ function verifyCSRFToken($token) {
         body {
             transition: background 0.3s, color 0.3s;
             color: #f8fafc;
-            background: radial-gradient(circle at 20% 30%, #0a0a0a, #000000);
+            background: radial-gradient(circle at 20% 30%, #141b2d, #0b1020);
         }
         html.light-mode body {
-            background: radial-gradient(circle at 20% 30%, #f7f9fc, #e5edf7);
+            background: radial-gradient(circle at 20% 30%, #f4efe4, #e8dcc8);
             color: #0f172a;
         }
         .glass-card {
-            background: rgba(0, 0, 0, 0.60);
+            background: rgba(17, 24, 39, 0.60);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: background 0.3s, border 0.3s;
         }
         html.light-mode .glass-card {
-            background: rgba(255, 255, 255, 0.88);
+            background: rgba(255, 250, 241, 0.92);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(221, 212, 195, 0.9);
+            box-shadow: 0 12px 30px rgba(61, 45, 32, 0.08);
         }
         .toggle-btn {
             cursor: pointer;
@@ -49,13 +49,13 @@ function verifyCSRFToken($token) {
             opacity: 0.8;
         }
         input, select {
-            background: rgba(255, 255, 255, 0.10);
-            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(255, 250, 241, 0.10);
+            border: 1px solid rgba(221, 212, 195, 0.18);
             color: #f8fafc;
         }
         html.light-mode input, html.light-mode select {
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(255, 250, 241, 0.98);
+            border: 1px solid rgba(210, 198, 179, 0.9);
             color: #0f172a;
         }
         html.light-mode input::placeholder {
@@ -69,10 +69,15 @@ function verifyCSRFToken($token) {
         html.light-mode .text-gray-300 { color: #475569 !important; }
         html.light-mode .text-gray-400 { color: #64748b !important; }
         html.light-mode .text-white { color: #0f172a !important; }
+        html.light-mode .toggle-btn { color: #334155 !important; }
+        html.light-mode .toggle-btn:hover { color: #111827 !important; }
         html.light-mode .bg-white\/10 { background: rgba(255, 255, 255, 0.72) !important; }
         html.light-mode .border-gray-600 { border-color: rgba(148, 163, 184, 0.35) !important; }
         html.light-mode .bg-blue-600 { background: #2563eb !important; }
         html.light-mode .hover\:bg-blue-700:hover { background: #1d4ed8 !important; }
+        html.light-mode input::placeholder {
+            color: #94a3b8;
+        }
     </style>
 </head>
 <body class="dark">

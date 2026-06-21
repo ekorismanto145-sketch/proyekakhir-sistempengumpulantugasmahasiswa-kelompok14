@@ -9,33 +9,33 @@
     
     <style>
         :root {
-            --bg-darkbg: #0B1120;
-            --bg-surface: #151E32;
-            --bg-surface-2: #1B2540;
-            --border-color: #1f2937;
-            --text-main: #ffffff;
-            --text-heading: #ffffff;
-            --text-body: #e5e7eb;
+            --bg-darkbg: #111827;
+            --bg-surface: #182233;
+            --bg-surface-2: #202c40;
+            --border-color: #2a3648;
+            --text-main: #f3f4f6;
+            --text-heading: #f9fafb;
+            --text-body: #d1d5db;
             --text-muted: #9ca3af;
-            --input-bg: #0f172a;
-            --input-border: #374151;
-            --hover-bg: #1f2937;
-            --shadow-soft: 0 10px 30px rgba(2, 6, 23, 0.30);
+            --input-bg: #162033;
+            --input-border: #3c4a60;
+            --hover-bg: #243045;
+            --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.34);
         }
 
         html.light-mode {
-            --bg-darkbg: #f7f9fc;
-            --bg-surface: #ffffff;
-            --bg-surface-2: #f4f7fb;
-            --border-color: #d4dde7;
-            --text-main: #0f172a;
-            --text-heading: #020617;
-            --text-body: #1e293b;
+            --bg-darkbg: #f4efe4;
+            --bg-surface: #fffaf1;
+            --bg-surface-2: #f8f3e8;
+            --border-color: #ddd4c3;
+            --text-main: #1f2937;
+            --text-heading: #111827;
+            --text-body: #334155;
             --text-muted: #64748b;
-            --input-bg: #ffffff;
-            --input-border: #c4cfdb;
-            --hover-bg: #e5ebf2;
-            --shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.07);
+            --input-bg: #fffaf1;
+            --input-border: #d2c6b3;
+            --hover-bg: #ede3d2;
+            --shadow-soft: 0 10px 24px rgba(61, 45, 32, 0.08);
         }
 
         body {
@@ -67,14 +67,24 @@
         html.light-mode .bg-gray-800,
         html.light-mode .bg-gray-900 { background-color: var(--hover-bg) !important; }
         html.light-mode .bg-gray-700 { background-color: #d6dee8 !important; }
+        html.light-mode .bg-gray-600 { background-color: #b7c3d3 !important; }
+        html.light-mode .bg-gray-500 { background-color: #94a3b8 !important; }
         html.light-mode .bg-darkbg { background-color: var(--bg-darkbg) !important; }
         html.light-mode .bg-surface { background-color: var(--bg-surface) !important; }
         html.light-mode .bg-surface-2 { background-color: var(--bg-surface-2) !important; }
+        html.light-mode .bg-blue-900\/10 { background-color: rgba(37, 99, 235, 0.06) !important; }
+        html.light-mode .bg-blue-900\/20 { background-color: rgba(37, 99, 235, 0.10) !important; }
+        html.light-mode .bg-purple-900\/10 { background-color: rgba(124, 58, 237, 0.06) !important; }
+        html.light-mode .bg-yellow-900\/10 { background-color: rgba(217, 119, 6, 0.07) !important; }
+        html.light-mode .bg-green-900\/10 { background-color: rgba(22, 163, 74, 0.06) !important; }
         html.light-mode .bg-surface\/50 { background-color: rgba(255, 255, 255, 0.72) !important; }
         html.light-mode .bg-darkbg\/70 { background-color: rgba(248, 250, 252, 0.82) !important; }
+        html.light-mode .bg-darkbg\/50 { background-color: rgba(255, 250, 241, 0.74) !important; }
+        html.light-mode .bg-darkbg\/30 { background-color: rgba(255, 250, 241, 0.58) !important; }
         html.light-mode .bg-blue-500\/15 { background-color: rgba(37, 99, 235, 0.10) !important; }
         html.light-mode .bg-yellow-500\/15 { background-color: rgba(234, 179, 8, 0.12) !important; }
         html.light-mode .bg-red-500\/10 { background-color: rgba(239, 68, 68, 0.10) !important; }
+        html.light-mode .bg-red-500\/20 { background-color: rgba(220, 38, 38, 0.10) !important; }
         html.light-mode .text-blue-400 { color: #2563eb !important; }
         html.light-mode .text-yellow-400 { color: #ca8a04 !important; }
         html.light-mode .text-red-500 { color: #dc2626 !important; }
@@ -99,13 +109,28 @@
         html.light-mode .border-green-500\/30 { border-color: rgba(22, 163, 74, 0.22) !important; }
         html.light-mode .border-blue-500\/50 { border-color: rgba(37, 99, 235, 0.36) !important; }
         html.light-mode .border-gray-600 { border-color: #b7c3d3 !important; }
+        html.light-mode .border-gray-500 { border-color: #94a3b8 !important; }
         html.light-mode .bg-blue-500\/15 { background-color: rgba(37, 99, 235, 0.08) !important; }
         html.light-mode .bg-yellow-500\/15 { background-color: rgba(217, 119, 6, 0.10) !important; }
         html.light-mode .bg-red-500\/10 { background-color: rgba(220, 38, 38, 0.08) !important; }
+        html.light-mode .bg-red-500\/20 { background-color: rgba(220, 38, 38, 0.10) !important; }
         html.light-mode .bg-green-500\/20 { background-color: rgba(22, 163, 74, 0.08) !important; }
         html.light-mode .bg-green-500\/10 { background-color: rgba(22, 163, 74, 0.06) !important; }
         html.light-mode .bg-red-500\/20 { background-color: rgba(220, 38, 38, 0.10) !important; }
         html.light-mode .bg-blue-600\/50 { background-color: rgba(37, 99, 235, 0.44) !important; }
+        html.light-mode .bg-orange-500\/20 { background-color: rgba(249, 115, 22, 0.10) !important; }
+        html.light-mode .border-orange-500 { border-color: rgba(249, 115, 22, 0.40) !important; }
+        html.light-mode .text-orange-300 { color: #ea580c !important; }
+        html.light-mode .text-orange-400 { color: #c2410c !important; }
+        html.light-mode .bg-gradient-to-r.from-gray-800.to-gray-900 {
+            background-image: linear-gradient(90deg, #eef2f7, #dde4ee) !important;
+        }
+        html.light-mode .from-gray-800,
+        html.light-mode .to-gray-900 {
+            --tw-gradient-from: #eef2f7 !important;
+            --tw-gradient-to: #dde4ee !important;
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+        }
         html.light-mode .text-green-400 { color: #16a34a !important; }
         html.light-mode .text-gray-900 { color: #020617 !important; }
         html.light-mode input,
