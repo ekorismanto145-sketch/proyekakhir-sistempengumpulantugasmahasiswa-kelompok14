@@ -1,5 +1,5 @@
-CREATE DATABASE my_task;
-USE my_task;
+CREATE DATABASE my_academic;
+USE my_academic;
 
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -10,12 +10,12 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-DELETE FROM users WHERE email = 'admin@mytask.id';
+DELETE FROM users WHERE email = 'admin@myacademic.app';
 
 INSERT INTO users (nama, email, password, role) 
-VALUES ('Administrator', 'admin@mytask.id', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+VALUES ('Administrator', 'admin@myacademic.app', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
 
-USE my_task;
+USE my_academic;
 CREATE TABLE classes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nama_kelas VARCHAR(100) NOT NULL,

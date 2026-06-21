@@ -17,7 +17,7 @@ function env_value(array $keys, $default = null) {
 $db_host = env_value(['DB_HOST', 'MYSQLHOST', 'DATABASE_HOST'], 'localhost');
 $db_user = env_value(['DB_USER', 'MYSQLUSER', 'DATABASE_USER'], 'root');
 $db_pass = env_value(['DB_PASSWORD', 'MYSQLPASSWORD', 'DATABASE_PASSWORD'], '');
-$db_name = env_value(['DB_NAME', 'MYSQLDATABASE', 'DATABASE_NAME'], 'my_task');
+$db_name = env_value(['DB_NAME', 'MYSQLDATABASE', 'DATABASE_NAME'], 'my_academic');
 $db_port = (int) env_value(['DB_PORT', 'MYSQLPORT', 'DATABASE_PORT'], 3306);
 
 $conn = mysqli_connect($db_host, $db_user, $db_pass, $db_name, $db_port);

@@ -1,5 +1,5 @@
-CREATE DATABASE my_task;
-USE my_task;
+CREATE DATABASE my_academic;
+USE my_academic;
 
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -10,23 +10,23 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-DELETE FROM users WHERE email = 'admin@mytask.id';
+DELETE FROM users WHERE email = 'admin@myacademic.app';
 
 INSERT INTO users (nama, email, PASSWORD, ROLE) 
-VALUES ('Administrator', 'admin@mytask.id', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+VALUES ('Administrator', 'admin@myacademic.app', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
 
 INSERT INTO users (nama, email, PASSWORD, ROLE) 
-VALUES ('Dr. Imamah, S.kom., M.kom.', '198507212014042001@dosen.trunojoyo.id', '$2a$12$howIPRb4p1CjlGTLon9O9uwIl/iYCni3vbHH25BCMJnOTAiZ.5U62', 'dosen');
+VALUES ('Dr. Imamah, S.kom., M.kom.', '198507212014042001@dosen.myacademic.app', '$2a$12$howIPRb4p1CjlGTLon9O9uwIl/iYCni3vbHH25BCMJnOTAiZ.5U62', 'dosen');
 
 INSERT INTO users (nama, email, PASSWORD, ROLE) 
-VALUES ('Iqbal Hakim Hakamullah', '250441100017@student.trunojoyo.id', '$2a$12$/Nb7RP8yI463Yuaep21iKeO40bCvGSox8ui9RCeMW00etcSfFSqoS', 'mahasiswa');
+VALUES ('Iqbal Hakim Hakamullah', '250441100017@student.myacademic.app', '$2a$12$/Nb7RP8yI463Yuaep21iKeO40bCvGSox8ui9RCeMW00etcSfFSqoS', 'mahasiswa');
 
 INSERT INTO users (nama, email, PASSWORD, ROLE) 
-VALUES ('Eko Rismanto', '250441100136@student.trunojoyo.id', '$2a$12$OJvUMEJapcHNt0sAaZ1TAubiekuE.qcAFZ38HJHd2GbsQ1H6aXTpu', 'mahasiswa');
+VALUES ('Eko Rismanto', '250441100136@student.myacademic.app', '$2a$12$OJvUMEJapcHNt0sAaZ1TAubiekuE.qcAFZ38HJHd2GbsQ1H6aXTpu', 'mahasiswa');
 
-DELETE FROM users WHERE email = '198507212014042001@dosen.trunojoyo.id';
+DELETE FROM users WHERE email = '198507212014042001@dosen.myacademic.app';
 
-USE my_task;
+USE my_academic;
 CREATE TABLE classes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nama_kelas VARCHAR(100) NOT NULL,

@@ -9,7 +9,7 @@ CREATE TABLE users (
 );
 
 INSERT INTO users (nama, email, PASSWORD, ROLE) 
-VALUES ('Administrator', 'admin@mytask.id', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+VALUES ('Administrator', 'admin@myacademic.app', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
 
 INSERT INTO users (nama, email, PASSWORD, ROLE) 
 VALUES ('Dr. Imamah, S.kom., M.kom.', '198507212014042001@dosen.trunojoyo.id', '$2a$12$howIPRb4p1CjlGTLon9O9uwIl/iYCni3vbHH25BCMJnOTAiZ.5U62', 'dosen');
