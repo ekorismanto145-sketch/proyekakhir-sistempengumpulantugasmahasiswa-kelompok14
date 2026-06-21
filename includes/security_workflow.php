@@ -66,6 +66,11 @@ if (!function_exists('ensureSecurityWorkflowTables')) {
             )
         ");
 
+        $colCheck = $conn->query("SHOW COLUMNS FROM security_audit_logs LIKE 'context_json'");
+        if ($colCheck !== false && $colCheck->num_rows === 0) {
+            $conn->query("ALTER TABLE security_audit_logs ADD COLUMN context_json TEXT DEFAULT NULL AFTER reason");
+        }
+
         $done = true;
     }
 }
@@ -75,9 +80,17 @@ if (!function_exists('logSecurityAction')) {
         ensureSecurityWorkflowTables($conn);
         $ctx = $context === null ? null : json_encode($context, JSON_UNESCAPED_UNICODE);
         $stmt = $conn->prepare("INSERT INTO security_audit_logs (actor_user_id, actor_role, action_type, target_type, target_id, reason, context_json) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("issssss", $actorUserId, $actorRole, $actionType, $targetType, $targetId, $reason, $ctx);
-        $stmt->execute();
-        $stmt->close();
+        if ($stmt) {
+            $stmt->bind_param("issssss", $actorUserId, $actorRole, $actionType, $targetType, $targetId, $reason, $ctx);
+            $stmt->execute();
+            $stmt->close();
+            return;
+        }
+
+        $fallback = $conn->prepare("INSERT INTO security_audit_logs (actor_user_id, actor_role, action_type, target_type, target_id, reason) VALUES (?, ?, ?, ?, ?, ?)");
+        $fallback->bind_param("isssss", $actorUserId, $actorRole, $actionType, $targetType, $targetId, $reason);
+        $fallback->execute();
+        $fallback->close();
     }
 }
 
