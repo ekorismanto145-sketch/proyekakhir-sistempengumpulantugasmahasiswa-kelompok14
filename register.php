@@ -1,5 +1,6 @@
 <?php 
 include 'includes/db.php'; 
+include 'includes/lang.php';
 
 $requested_lang = $_POST['lang'] ?? '';
 if (in_array($requested_lang, ['id', 'en'], true)) {
@@ -21,7 +22,7 @@ function verifyCSRFToken($token) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - MY ACADEMIC</title>
+    <title><?= t('register_title') ?> - MY ACADEMIC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -105,8 +106,8 @@ function verifyCSRFToken($token) {
                 </button>
             </div>
 
-            <h2 id="formTitle" class="text-3xl font-bold text-blue-400 mb-2">Daftar Akun</h2>
-            <p id="formDesc" class="text-gray-300 mb-6">Bergabung dengan MY ACADEMIC</p>
+            <h2 id="formTitle" class="text-3xl font-bold text-blue-400 mb-2"><?= t('register_title') ?></h2>
+            <p id="formDesc" class="text-gray-300 mb-6"><?= t('register_desc') ?></p>
 
             <!-- Tempat pesan error/success -->
             <div id="messageArea" class="mb-4"></div>
@@ -115,28 +116,28 @@ function verifyCSRFToken($token) {
                 <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
                 <input id="formLang" type="hidden" name="lang" value="id">
                 <div>
-                    <label id="nameLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Nama Lengkap</label>
-                    <input id="nameInput" type="text" name="nama" placeholder="Masukkan nama lengkap" class="w-full p-3 rounded-lg" required>
+                    <label id="nameLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1"><?= t('register_name_label') ?></label>
+                    <input id="nameInput" type="text" name="nama" placeholder="<?= t('register_name_placeholder') ?>" class="w-full p-3 rounded-lg" required>
                 </div>
                 <div>
-                    <label id="roleLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Role</label>
+                    <label id="roleLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1"><?= t('role_label') ?></label>
                     <select id="roleSelect" name="role" class="w-full p-3 rounded-lg" required>
                         <option value="mahasiswa">Mahasiswa (Gunakan NIM)</option>
                         <option value="dosen">Dosen (Gunakan NIP)</option>
                     </select>
                 </div>
                 <div>
-                    <label id="emailLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Email</label>
-                    <input id="emailInput" type="email" name="email" placeholder="Masukkan email" class="w-full p-3 rounded-lg" required>
+                    <label id="emailLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1"><?= t('email_label') ?></label>
+                    <input id="emailInput" type="email" name="email" placeholder="<?= t('email_placeholder') ?>" class="w-full p-3 rounded-lg" required>
                 </div>
                 <div>
-                    <label id="passLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Password</label>
-                    <input id="passwordInput" type="password" name="password" placeholder="Masukkan kata sandi" class="w-full p-3 rounded-lg" required minlength="6">
+                    <label id="passLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1"><?= t('password_label') ?></label>
+                    <input id="passwordInput" type="password" name="password" placeholder="<?= t('password_placeholder') ?>" class="w-full p-3 rounded-lg" required minlength="6">
                 </div>
-                <button id="registerBtn" type="submit" name="register" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-bold transition">Daftar</button>
+                <button id="registerBtn" type="submit" name="register" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-bold transition"><?= t('register_button') ?></button>
             </form>
             <p id="loginLink" class="mt-6 text-center text-sm text-gray-400">
-                Sudah punya akun? <a href="login.php" class="text-blue-400 hover:underline">Login</a>
+                <?= t('already_have_account') ?> <a href="login.php" class="text-blue-400 hover:underline"><?= t('login_button') ?></a>
             </p>
         </div>
     </div>
@@ -145,38 +146,38 @@ function verifyCSRFToken($token) {
         // Multi bahasa
         const trans = {
             id: {
-                title: "Daftar Akun",
-                desc: "Bergabung dengan MY ACADEMIC",
-                nameLabel: "Nama Lengkap",
-                roleLabel: "Peran",
-                emailLabel: "Email",
-                passLabel: "Kata sandi",
-                namePlaceholder: "Masukkan nama lengkap",
-                emailPlaceholder: "Masukkan email",
-                passPlaceholder: "Masukkan kata sandi",
-                roleStudent: "Mahasiswa (Gunakan NIM)",
-                roleLecturer: "Dosen (Gunakan NIP)",
-                btn: "Daftar",
-                loginText: "Sudah punya akun? ",
-                loginLink: "Masuk",
+                title: "<?= t('register_title') ?>",
+                desc: "<?= t('register_desc') ?>",
+                nameLabel: "<?= t('register_name_label') ?>",
+                roleLabel: "<?= t('role_label') ?>",
+                emailLabel: "<?= t('email_label') ?>",
+                passLabel: "<?= t('password_label') ?>",
+                namePlaceholder: "<?= t('register_name_placeholder') ?>",
+                emailPlaceholder: "<?= t('email_placeholder') ?>",
+                passPlaceholder: "<?= t('password_placeholder') ?>",
+                roleStudent: "<?= t('register_role_student') ?>",
+                roleLecturer: "<?= t('register_role_lecturer') ?>",
+                btn: "<?= t('register_button') ?>",
+                loginText: "<?= t('already_have_account') ?> ",
+                loginLink: "<?= t('login_button') ?>",
                 errorDefault: "Terjadi kesalahan. Periksa kembali data Anda.",
                 successMsg: "Registrasi berhasil. Silakan masuk."
             },
             en: {
-                title: "Register Account",
-                desc: "Join MY ACADEMIC",
-                nameLabel: "Full Name",
-                roleLabel: "Role",
-                emailLabel: "Email",
-                passLabel: "Password",
-                namePlaceholder: "Enter full name",
-                emailPlaceholder: "Enter email",
-                passPlaceholder: "Enter password",
-                roleStudent: "Student (Use NIM)",
-                roleLecturer: "Lecturer (Use NIP)",
-                btn: "Register",
-                loginText: "Already have an account? ",
-                loginLink: "Sign In",
+                title: "<?= t('register_title') ?>",
+                desc: "<?= t('register_desc') ?>",
+                nameLabel: "<?= t('register_name_label') ?>",
+                roleLabel: "<?= t('role_label') ?>",
+                emailLabel: "<?= t('email_label') ?>",
+                passLabel: "<?= t('password_label') ?>",
+                namePlaceholder: "<?= t('register_name_placeholder') ?>",
+                emailPlaceholder: "<?= t('email_placeholder') ?>",
+                passPlaceholder: "<?= t('password_placeholder') ?>",
+                roleStudent: "<?= t('register_role_student') ?>",
+                roleLecturer: "<?= t('register_role_lecturer') ?>",
+                btn: "<?= t('register_button') ?>",
+                loginText: "<?= t('already_have_account') ?> ",
+                loginLink: "<?= t('login_button') ?>",
                 errorDefault: "An error occurred. Please check your data.",
                 successMsg: "Registration successful. Please sign in."
             }

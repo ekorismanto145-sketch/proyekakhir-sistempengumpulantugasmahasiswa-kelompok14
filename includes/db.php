@@ -60,9 +60,9 @@ $materials_table_sql = "CREATE TABLE IF NOT EXISTS materials (
 )";
 $conn->query($materials_table_sql);
 
-$users_email_index = $conn->query("SHOW INDEX FROM users WHERE Key_name = 'uniq_users_email'");
+$users_email_index = $conn->query("SELECT 1 FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'users' AND index_name = 'uniq_users_email' LIMIT 1");
 if ($users_email_index && $users_email_index->num_rows === 0) {
-    $existing_email_index = $conn->query("SHOW INDEX FROM users WHERE Column_name = 'email' AND Non_unique = 0 LIMIT 1");
+    $existing_email_index = $conn->query("SELECT 1 FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'users' AND column_name = 'email' AND non_unique = 0 LIMIT 1");
     if ($existing_email_index && $existing_email_index->num_rows === 0) {
         $conn->query("ALTER TABLE users ADD UNIQUE KEY uniq_users_email (email)");
     }

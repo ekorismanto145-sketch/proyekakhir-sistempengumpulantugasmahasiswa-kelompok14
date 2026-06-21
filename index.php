@@ -170,7 +170,7 @@ include 'includes/navbar.php';
             </div>
             <div>
                 <button onclick="openClassModal()" class="px-6 py-3.5 bg-gradient-to-r from-gray-800 to-gray-900 border border-gray-600 hover:border-redaccent text-white font-semibold rounded-xl transition-all flex items-center group">
-                    <i class="fas fa-plus-circle text-redaccent mr-3 group-hover:rotate-90 transition-transform duration-300"></i> <?= ($role === 'dosen') ? t('create_class') : t('manage_class') ?>
+                    <i class="fas fa-plus-circle text-redaccent mr-3 group-hover:rotate-90 transition-transform duration-300"></i> <?= ($role === 'mahasiswa') ? t('join_class') : (($role === 'dosen') ? t('create_class') : t('manage_class')) ?>
                 </button>
             </div>
         </div>
@@ -257,27 +257,17 @@ include 'includes/navbar.php';
 <div id="classModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center transition-opacity opacity-0">
     <div class="bg-surface border border-gray-700 rounded-2xl w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden transform scale-95 transition-transform duration-300" id="classModalBox">
         <div class="flex justify-between items-center p-5 border-b border-gray-800 bg-darkbg">
-            <h3 class="text-xl font-bold text-white flex items-center"><i class="fas fa-chalkboard text-redaccent mr-3"></i> <?= ($role === 'dosen') ? t('create_class') : t('kelola_kelas') ?></h3>
+            <h3 class="text-xl font-bold text-white flex items-center"><i class="fas fa-chalkboard text-redaccent mr-3"></i> <?= ($role === 'mahasiswa') ? t('join_class') : (($role === 'dosen') ? t('create_class') : t('kelola_kelas')) ?></h3>
             <button onclick="closeClassModal()" class="text-gray-500 hover:text-redaccent transition"><i class="fas fa-times text-xl"></i></button>
         </div>
-        <?php if ($role !== 'dosen'): ?>
+        <?php if ($role === 'mahasiswa'): ?>
         <div class="flex border-b border-gray-800 bg-darkbg">
             <button onclick="switchTab('gabung')" id="tab-gabung" class="flex-1 py-3 text-sm font-bold text-white border-b-2 border-blue-500 bg-surface transition"><?= t('gabung_kelas') ?></button>
-            <button onclick="switchTab('buat')" id="tab-buat" class="flex-1 py-3 text-sm font-bold text-gray-500 hover:text-gray-300 border-b-2 border-transparent transition"><?= t('buat_kelas') ?></button>
         </div>
         <div id="content-gabung" class="p-6">
-            <div class="bg-darkbg border border-gray-700 rounded-xl p-4 flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-4">
-                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($user['nama'] ?? '') ?>&background=151E32&color=fff" class="w-12 h-12 rounded-full border border-gray-600">
-                    <div><p class="text-sm font-bold text-white"><?= htmlspecialchars($user['email'] ?? '') ?></p><p class="text-xs text-gray-500 uppercase tracking-wider"><?= htmlspecialchars($role) ?></p></div>
-                </div>
-                <?php if ($role !== 'admin'): ?>
-                    <a href="logout.php" class="text-xs font-bold text-blue-500 hover:text-white hover:bg-blue-600 transition border border-blue-500/50 px-3 py-2 rounded-lg"><?= t('ganti_akun') ?></a>
-                <?php endif; ?>
-            </div>
             <div class="mb-5 bg-blue-900/10 border border-blue-500/30 p-3.5 rounded-xl flex items-start">
                 <i class="fas fa-info-circle text-blue-400 mt-0.5 mr-3"></i>
-                <p class="text-xs text-gray-400 leading-relaxed"><?= t('info_email') ?></p>
+                <p class="text-xs text-gray-400 leading-relaxed"><?= t('join_class_only_desc') ?></p>
             </div>
             <form action="" method="POST">
                 <div class="mb-6">
@@ -286,18 +276,6 @@ include 'includes/navbar.php';
                 </div>
                 <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
                 <button type="submit" name="action_gabung" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition"><?= t('gabung_sekarang') ?></button>
-            </form>
-        </div>
-        <div id="content-buat" class="p-6 hidden">
-            <form action="" method="POST" class="space-y-4">
-                <div><label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider"><?= t('nama_kelas_label') ?></label><input type="text" name="nama_kelas" placeholder="<?= t('nama_kelas_placeholder') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-redaccent transition text-sm" required></div>
-                <div><label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider"><?= t('mata_kuliah_label') ?></label><input type="text" name="mata_pelajaran" placeholder="<?= t('mata_kuliah_placeholder') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-redaccent transition text-sm" required></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider"><?= t('ruang_label') ?></label><input type="text" name="ruang" placeholder="<?= t('ruang_placeholder') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-redaccent transition text-sm" required></div>
-                    <div><label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider"><?= t('nama_dosen_label') ?></label><input type="text" name="nama_dosen" value="<?= ($role === 'dosen') ? htmlspecialchars($user['nama'] ?? '') : '' ?>" placeholder="<?= t('nama_dosen_placeholder') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-redaccent transition text-sm" required></div>
-                </div>
-                <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
-                <button type="submit" name="action_buat" class="w-full mt-2 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white font-bold py-3.5 rounded-xl transition"><?= t('buat_kelas_button') ?></button>
             </form>
         </div>
         <?php else: ?>

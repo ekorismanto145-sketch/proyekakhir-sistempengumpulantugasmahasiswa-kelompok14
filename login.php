@@ -1,5 +1,6 @@
 <?php 
 include __DIR__ . '/includes/db.php'; 
+include __DIR__ . '/includes/lang.php';
 
 $current_time = time();
 $conn->query("DELETE FROM login_attempts WHERE blocked_until_ts IS NOT NULL AND blocked_until_ts < " . ($current_time - 3600));
@@ -101,7 +102,7 @@ if (isset($_POST['login'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - MY ACADEMIC</title>
+    <title><?= t('login_page_title') ?> - MY ACADEMIC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -156,23 +157,23 @@ if (isset($_POST['login'])) {
                 <button id="langToggle" class="toggle-btn text-gray-200 hover:text-white text-sm font-semibold px-2 py-1 rounded-lg bg-white/10">EN</button>
             </div>
             <h2 id="appTitle" class="text-3xl font-bold text-blue-400 mb-2">MY ACADEMIC</h2>
-            <p id="subTitle" class="text-gray-300 mb-6">Masuk ke sistem pengumpulan tugas</p>
+            <p id="subTitle" class="text-gray-300 mb-6"><?= t('login_desc') ?></p>
             <?php if (!empty($error_msg)): ?>
                 <p id="errorMsg" class='bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-lg text-sm mb-4 font-semibold'><?= htmlspecialchars($error_msg) ?></p>
             <?php endif; ?>
             <form action="" method="POST" class="space-y-4" autocomplete="off">
                 <input id="formLang" type="hidden" name="lang" value="id">
-                <div><label id="emailLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Email</label><input id="emailInput" type="email" name="email" placeholder="Masukkan email" class="w-full p-3 rounded-lg bg-white/10 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 outline-none transition" required autocomplete="off"></div>
-                <div><label id="passLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1">Password</label><input id="passwordInput" type="password" name="password" placeholder="Masukkan kata sandi" class="w-full p-3 rounded-lg bg-white/10 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 outline-none" required autocomplete="new-password"></div>
-                <button id="loginBtn" type="submit" name="login" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-lg">Masuk</button>
+                <div><label id="emailLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1"><?= t('email_label') ?></label><input id="emailInput" type="email" name="email" placeholder="<?= t('email_placeholder') ?>" class="w-full p-3 rounded-lg bg-white/10 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 outline-none transition" required autocomplete="off"></div>
+                <div><label id="passLabel" class="text-xs font-semibold text-gray-300 uppercase ml-1"><?= t('password_label') ?></label><input id="passwordInput" type="password" name="password" placeholder="<?= t('password_placeholder') ?>" class="w-full p-3 rounded-lg bg-white/10 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 outline-none" required autocomplete="new-password"></div>
+                <button id="loginBtn" type="submit" name="login" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-lg"><?= t('login_button') ?></button>
             </form>
-            <p id="registerLink" class="mt-6 text-center text-sm text-gray-400">Belum punya akun? <a href="register.php" class="text-blue-400 hover:underline">Daftar di sini</a></p>
+            <p id="registerLink" class="mt-6 text-center text-sm text-gray-400"><?= t('no_account_yet') ?> <a href="register.php" class="text-blue-400 hover:underline"><?= t('register_here') ?></a></p>
         </div>
     </div>
     <script>
         const translations = {
-            id: { title: "MY ACADEMIC", subtitle: "Masuk ke sistem pengumpulan tugas", emailLabel: "Email", passLabel: "Kata sandi", emailPlaceholder: "Masukkan email", passPlaceholder: "Masukkan kata sandi", loginBtn: "Masuk", registerText: "Belum punya akun? ", registerLink: "Daftar di sini", errorDefault: "Email atau kata sandi salah." },
-            en: { title: "MY ACADEMIC", subtitle: "Sign in to the assignment system", emailLabel: "Email", passLabel: "Password", emailPlaceholder: "Enter email", passPlaceholder: "Enter password", loginBtn: "Sign In", registerText: "Don't have an account? ", registerLink: "Register here", errorDefault: "Invalid email or password." }
+            id: { title: "MY ACADEMIC", subtitle: "<?= t('login_desc') ?>", emailLabel: "<?= t('email_label') ?>", passLabel: "<?= t('password_label') ?>", emailPlaceholder: "<?= t('email_placeholder') ?>", passPlaceholder: "<?= t('password_placeholder') ?>", loginBtn: "<?= t('login_button') ?>", registerText: "<?= t('no_account_yet') ?> ", registerLink: "<?= t('register_here') ?>", errorDefault: "Email atau kata sandi salah." },
+            en: { title: "MY ACADEMIC", subtitle: "<?= t('login_desc') ?>", emailLabel: "<?= t('email_label') ?>", passLabel: "<?= t('password_label') ?>", emailPlaceholder: "<?= t('email_placeholder') ?>", passPlaceholder: "<?= t('password_placeholder') ?>", loginBtn: "<?= t('login_button') ?>", registerText: "<?= t('no_account_yet') ?> ", registerLink: "<?= t('register_here') ?>", errorDefault: "Invalid email or password." }
         };
         let currentLang = localStorage.getItem('lang') || localStorage.getItem('login_lang') || 'id';
         let currentTheme = localStorage.getItem('theme') || localStorage.getItem('login_theme') || 'dark';
