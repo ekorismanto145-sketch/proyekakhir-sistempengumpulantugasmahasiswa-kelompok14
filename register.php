@@ -169,6 +169,7 @@ function verifyCSRFToken($token) {
         function applyLanguage(lang) {
             const t = trans[lang];
             document.documentElement.lang = lang;
+            document.getElementById('langToggle').innerText = lang.toUpperCase();
             document.getElementById('formTitle').innerText = t.title;
             document.getElementById('formDesc').innerText = t.desc;
             document.getElementById('nameLabel').innerText = t.nameLabel;

@@ -179,6 +179,7 @@ if (isset($_POST['login'])) {
         function applyLanguage(lang) {
             const t = translations[lang];
             document.documentElement.lang = lang;
+            document.getElementById('langToggle').innerText = lang.toUpperCase();
             document.getElementById('appTitle').innerText = t.title;
             document.getElementById('subTitle').innerText = t.subtitle;
             document.getElementById('emailLabel').innerText = t.emailLabel;
