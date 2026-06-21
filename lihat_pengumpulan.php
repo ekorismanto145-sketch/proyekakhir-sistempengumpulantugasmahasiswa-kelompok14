@@ -1,5 +1,6 @@
 <?php
 include 'includes/db.php';
+include 'includes/lang.php';
 if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
 $user = $_SESSION['user'];
 $role = $user['role'];
@@ -20,11 +21,11 @@ if (!function_exists('verifyCSRFToken')) {
 }
 
 if ($role !== 'dosen' && $role !== 'admin') {
-    die("Akses ditolak. Halaman ini hanya untuk dosen dan admin.");
+    die(t('access_denied'));
 }
 
 $task_id = (int)$_GET['task_id'];
-if ($task_id <= 0) die("ID tugas tidak valid.");
+if ($task_id <= 0) die(t('invalid_task_id'));
 
 // Ambil info tugas dan kelas
 $stmt = $conn->prepare("
@@ -38,16 +39,16 @@ $stmt->execute();
 $task = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
-if (!$task) die("Tugas tidak ditemukan.");
+if (!$task) die(t('task_not_found'));
 
 if ($role === 'dosen' && $task['dosen_id'] != $user['id']) {
-    die("Anda tidak memiliki akses ke tugas ini.");
+    die(t('access_denied_lecturer'));
 }
 
 // Proses hapus pengumpulan tugas mahasiswa (dosen/admin)
 if (isset($_POST['hapus_pengumpulan'])) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
 
     $submission_id = (int)($_POST['submission_id'] ?? 0);
@@ -95,7 +96,7 @@ if (isset($_POST['hapus_pengumpulan'])) {
 // Proses simpan nilai & feedback
 if (isset($_POST['simpan_nilai'])) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
 
     $submission_id = (int)$_POST['submission_id'];
@@ -103,7 +104,7 @@ if (isset($_POST['simpan_nilai'])) {
     $feedback = trim($_POST['feedback'] ?? '');
     
     if ($nilai !== null && ($nilai < 0 || $nilai > 100)) {
-        die("Nilai harus antara 0-100.");
+        die(t('grade_must_be_between'));
     }
     
     // Ambil mahasiswa_id untuk notifikasi
@@ -166,27 +167,27 @@ include 'includes/navbar.php';
 <main class="max-w-6xl mx-auto p-6 md:p-10">
     <div class="flex justify-between items-center border-b border-gray-800 pb-5 mb-8">
         <div>
-            <h2 class="text-3xl font-extrabold text-white tracking-wide">Pengumpulan Tugas</h2>
-            <p class="text-gray-400 mt-1">Tugas: <?= htmlspecialchars($task['judul']) ?> | Kelas: <?= htmlspecialchars($task['nama_kelas']) ?></p>
+            <h2 class="text-3xl font-extrabold text-white tracking-wide"><?= t('submission_list_title') ?></h2>
+            <p class="text-gray-400 mt-1"><?= t('task_title') ?>: <?= htmlspecialchars($task['judul']) ?> | <?= t('kelas') ?>: <?= htmlspecialchars($task['nama_kelas']) ?></p>
         </div>
         <a href="detail_kelas.php?id=<?= $task['class_id'] ?>" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white">
-            <i class="fas fa-arrow-left mr-2"></i>Kembali ke Kelas
+            <i class="fas fa-arrow-left mr-2"></i><?= t('back_to_class') ?>
         </a>
     </div>
 
     <?php if(isset($_GET['pesan']) && $_GET['pesan'] == 'sukses'): ?>
         <div class="mb-6 px-4 py-3 bg-green-500/20 border border-green-500 text-green-400 rounded-xl">
-            <i class="fas fa-check-circle mr-2"></i> Nilai berhasil disimpan dan mahasiswa telah dinotifikasi.
+            <i class="fas fa-check-circle mr-2"></i> <?= t('grade_saved_success') ?>
         </div>
     <?php endif; ?>
     <?php if(isset($_GET['pesan']) && $_GET['pesan'] == 'hapus_sukses'): ?>
         <div class="mb-6 px-4 py-3 bg-red-500/20 border border-red-500 text-red-300 rounded-xl">
-            <i class="fas fa-trash-alt mr-2"></i> Pengumpulan mahasiswa berhasil dihapus.
+            <i class="fas fa-trash-alt mr-2"></i> <?= t('submission_deleted_success') ?>
         </div>
     <?php endif; ?>
     <?php if(isset($_GET['pesan']) && $_GET['pesan'] == 'hapus_gagal'): ?>
         <div class="mb-6 px-4 py-3 bg-yellow-500/20 border border-yellow-500 text-yellow-300 rounded-xl">
-            <i class="fas fa-exclamation-triangle mr-2"></i> Gagal menghapus pengumpulan. Data tidak ditemukan atau sudah terhapus.
+            <i class="fas fa-exclamation-triangle mr-2"></i> <?= t('submission_delete_failed') ?>
         </div>
     <?php endif; ?>
 
@@ -196,12 +197,12 @@ include 'includes/navbar.php';
                 <thead class="bg-darkbg border-b border-gray-800">
                     <tr>
                         <th class="px-6 py-4 text-gray-400 text-xs uppercase">No</th>
-                        <th class="px-6 py-4 text-gray-400 text-xs uppercase">Mahasiswa</th>
+                        <th class="px-6 py-4 text-gray-400 text-xs uppercase"><?= t('mahasiswa_role') ?></th>
                         <th class="px-6 py-4 text-gray-400 text-xs uppercase">File</th>
-                        <th class="px-6 py-4 text-gray-400 text-xs uppercase">Waktu Upload</th>
-                        <th class="px-6 py-4 text-gray-400 text-xs uppercase">Nilai</th>
-                        <th class="px-6 py-4 text-gray-400 text-xs uppercase">Feedback</th>
-                        <th class="px-6 py-4 text-gray-400 text-xs uppercase">Aksi</th>
+                        <th class="px-6 py-4 text-gray-400 text-xs uppercase"><?= t('upload_time') ?></th>
+                        <th class="px-6 py-4 text-gray-400 text-xs uppercase"><?= t('score') ?></th>
+                        <th class="px-6 py-4 text-gray-400 text-xs uppercase"><?= t('feedback') ?></th>
+                        <th class="px-6 py-4 text-gray-400 text-xs uppercase"><?= t('action') ?></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-800">
@@ -225,15 +226,15 @@ include 'includes/navbar.php';
                             </td>
                             <td class="px-6 py-4">
                                 <input type="text" name="feedback" value="<?= htmlspecialchars($row['feedback'] ?? '') ?>" 
-                                       placeholder="Tulis feedback..." 
+                                       placeholder="<?= t('feedback') ?>..." 
                                        class="w-48 bg-darkbg border border-gray-700 text-white px-2 py-1 rounded text-sm">
                             </td>
                             <td class="px-6 py-4">
                                 <button type="submit" name="simpan_nilai" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-white text-xs mr-2">
-                                    <i class="fas fa-save mr-1"></i> Simpan
+                                    <i class="fas fa-save mr-1"></i> <?= t('save') ?>
                                 </button>
-                                <button type="submit" name="hapus_pengumpulan" onclick="return confirm('Yakin ingin menghapus pengumpulan mahasiswa ini? File juga akan dihapus.');" class="px-3 py-1 bg-red-600 hover:bg-red-500 rounded text-white text-xs">
-                                    <i class="fas fa-trash-alt mr-1"></i> Hapus
+                                <button type="submit" name="hapus_pengumpulan" onclick="return confirm('<?= t('delete_submission_confirm') ?>');" class="px-3 py-1 bg-red-600 hover:bg-red-500 rounded text-white text-xs">
+                                    <i class="fas fa-trash-alt mr-1"></i> <?= t('delete') ?>
                                 </button>
                             </td>
                         </form>
@@ -242,7 +243,7 @@ include 'includes/navbar.php';
                     <tr>
                         <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                             <i class="fas fa-inbox text-3xl mb-2 block"></i>
-                            Belum ada mahasiswa yang mengumpulkan tugas ini.
+                            <?= t('no_submissions_yet') ?>
                         </td>
                     </tr>
                     <?php endif; ?>

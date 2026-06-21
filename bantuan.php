@@ -1,5 +1,6 @@
 <?php 
 include 'includes/db.php'; 
+include 'includes/lang.php';
 if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
 
 $user = $_SESSION['user']; 
@@ -19,7 +20,7 @@ if (isset($_POST['kirim_keluhan'])) {
         $stmt->execute();
         $stmt->close();
 
-        $pesan_notif = 'Keluhan baru dari ' . $user['nama'] . ' (' . $role . ')';
+        $pesan_notif = t('complaint_new_from') . $user['nama'] . ' (' . $role . ')';
         $stmt_admin = $conn->prepare("SELECT id FROM users WHERE role = 'admin'");
         $stmt_admin->execute();
         $admins = $stmt_admin->get_result();
@@ -50,17 +51,17 @@ include 'includes/navbar.php';
 <main class="max-w-4xl mx-auto p-6 md:p-10">
     <div class="flex items-center border-b border-gray-800 pb-5 mb-8">
         <div class="w-1.5 h-8 bg-yellow-500 rounded-full mr-4 shadow-[0_0_10px_rgba(234,179,8,0.6)]"></div>
-        <h2 class="text-3xl font-extrabold text-white tracking-wide">Pusat Bantuan</h2>
+        <h2 class="text-3xl font-extrabold text-white tracking-wide"><?= t('help_center') ?></h2>
     </div>
 
     <?php if(isset($_GET['pesan'])): ?>
         <?php if($_GET['pesan'] == 'terkirim'): ?>
             <div class="mb-6 px-4 py-3 bg-green-500/20 border border-green-500 text-green-400 rounded-xl">
-                <i class="fas fa-check-circle mr-2"></i> Keluhan berhasil dikirim. Admin akan segera menindaklanjuti.
+                <i class="fas fa-check-circle mr-2"></i> <?= t('complaint_sent_success') ?>
             </div>
         <?php elseif($_GET['pesan'] == 'gagal'): ?>
             <div class="mb-6 px-4 py-3 bg-red-500/20 border border-red-500 text-red-400 rounded-xl">
-                <i class="fas fa-exclamation-circle mr-2"></i> Gagal mengirim. Pesan tidak boleh kosong.
+                <i class="fas fa-exclamation-circle mr-2"></i> <?= t('complaint_send_failed') ?>
             </div>
         <?php endif; ?>
     <?php endif; ?>
@@ -68,27 +69,27 @@ include 'includes/navbar.php';
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div class="space-y-6">
             <div class="bg-surface border border-gray-800 p-6 rounded-2xl shadow-lg">
-                <h3 class="text-lg font-bold text-white mb-2 flex items-center"><i class="fas fa-info-circle text-blue-500 mr-2"></i> Tentang MY TASK</h3>
-                <p class="text-sm text-gray-400 leading-relaxed">Platform untuk mengumpulkan tugas dan mengelola kelas secara interaktif. Dosen dapat membuat kelas, mahasiswa dapat bergabung dengan menggunakan kode unik 6-8 digit.</p>
+                <h3 class="text-lg font-bold text-white mb-2 flex items-center"><i class="fas fa-info-circle text-blue-500 mr-2"></i> <?= t('about_my_task') ?></h3>
+                <p class="text-sm text-gray-400 leading-relaxed"><?= t('about_my_task_desc') ?></p>
             </div>
             <div class="bg-surface border border-gray-800 p-6 rounded-2xl shadow-lg">
-                <h3 class="text-lg font-bold text-white mb-2 flex items-center"><i class="fas fa-moon text-purple-500 mr-2"></i> Mode Tampilan</h3>
-                <p class="text-sm text-gray-400 leading-relaxed">Anda dapat mengubah tema warna website (Gelap / Terang) melalui menu <b>Setelan</b> yang ada di sidebar (garis tiga) sebelah kiri layar.</p>
+                <h3 class="text-lg font-bold text-white mb-2 flex items-center"><i class="fas fa-moon text-purple-500 mr-2"></i> <?= t('display_mode') ?></h3>
+                <p class="text-sm text-gray-400 leading-relaxed"><?= t('display_mode_desc') ?></p>
             </div>
         </div>
 
         <!-- Form Laporan -->
         <div class="bg-surface border border-gray-700 rounded-2xl p-6 shadow-xl">
-            <h3 class="text-xl font-bold text-white mb-1">Lapor Kendala</h3>
-            <p class="text-xs text-gray-500 mb-5">Punya kendala dengan MY TASK? Kirim pesan ke Admin.</p>
+            <h3 class="text-xl font-bold text-white mb-1"><?= t('report_issue_title') ?></h3>
+            <p class="text-xs text-gray-500 mb-5"><?= t('report_issue_desc') ?></p>
             
             <form action="" method="POST" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Pesan Anda</label>
-                    <textarea name="pesan" rows="4" placeholder="Jelaskan masalah Anda terkait sistem ini..." class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-redaccent transition text-sm resize-none" required></textarea>
+                    <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider"><?= t('your_message') ?></label>
+                    <textarea name="pesan" rows="4" placeholder="<?= t('report_issue_desc') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-redaccent transition text-sm resize-none" required></textarea>
                 </div>
                 <button type="submit" name="kirim_keluhan" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg">
-                    <i class="fas fa-paper-plane mr-2"></i> Kirim Laporan
+                    <i class="fas fa-paper-plane mr-2"></i> <?= t('send_report') ?>
                 </button>
             </form>
         </div>

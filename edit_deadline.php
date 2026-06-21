@@ -1,11 +1,12 @@
 <?php
 include 'includes/db.php';
+include 'includes/lang.php';
 if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
 $user = $_SESSION['user'];
 $role = $user['role'];
 
 if ($role !== 'dosen' && $role !== 'admin') {
-    die("Akses ditolak.");
+    die(t('access_denied'));
 }
 
 $task_id = (int)$_POST['task_id'];
@@ -31,12 +32,12 @@ $task = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$task) {
-    die("Tugas tidak ditemukan.");
+    die(t('task_not_found'));
 }
 
 // Otorisasi: hanya dosen pemilik kelas atau admin
 if ($role === 'dosen' && $task['dosen_id'] != $user['id']) {
-    die("Anda tidak memiliki akses.");
+    die(t('access_denied_lecturer'));
 }
 
 if ($new_deadline_ts < time()) {
@@ -51,7 +52,7 @@ $update->execute();
 $update->close();
 
 // Kirim notifikasi ke semua mahasiswa di kelas
-$desc = "Deadline tugas '" . $task['judul'] . "' di kelas " . $task['nama_kelas'] . " telah diubah menjadi " . date('d M Y H:i', strtotime($new_deadline));
+    $desc = t('activity_deadline_updated_by_teacher_prefix') . "'" . $task['judul'] . "'" . t('activity_deadline_updated_by_teacher_suffix') . $task['nama_kelas'] . ' telah diubah menjadi ' . date('d M Y H:i', strtotime($new_deadline));
 $stmt_member = $conn->prepare("SELECT mahasiswa_id FROM class_members WHERE class_id = ?");
 $stmt_member->bind_param("i", $task['class_id']);
 $stmt_member->execute();
@@ -65,7 +66,7 @@ while ($row = $res->fetch_assoc()) {
 $stmt_member->close();
 
 // Notifikasi untuk dosen
-$desc_dosen = "Anda telah mengubah deadline tugas '" . $task['judul'] . "' menjadi " . date('d M Y H:i', strtotime($new_deadline));
+$desc_dosen = t('activity_deadline_updated_by_you_prefix') . "'" . $task['judul'] . "' menjadi " . date('d M Y H:i', strtotime($new_deadline));
 $ins_dosen = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'tugas')");
 $ins_dosen->bind_param("is", $user['id'], $desc_dosen);
 $ins_dosen->execute();

@@ -134,14 +134,14 @@ function verifyCSRFToken($token) {
                 title: "Daftar Akun",
                 desc: "Bergabung dengan MY TASK",
                 nameLabel: "Nama Lengkap",
-                roleLabel: "Role",
+                roleLabel: "Peran",
                 emailLabel: "Email",
-                passLabel: "Password",
+                passLabel: "Kata sandi",
                 btn: "Daftar",
                 loginText: "Sudah punya akun? ",
-                loginLink: "Login",
+                loginLink: "Masuk",
                 errorDefault: "Terjadi kesalahan. Periksa kembali data Anda.",
-                successMsg: "Registrasi Berhasil! Silakan Login."
+                successMsg: "Registrasi berhasil. Silakan masuk."
             },
             en: {
                 title: "Register Account",
@@ -152,12 +152,12 @@ function verifyCSRFToken($token) {
                 passLabel: "Password",
                 btn: "Register",
                 loginText: "Already have an account? ",
-                loginLink: "Login",
+                loginLink: "Sign In",
                 errorDefault: "An error occurred. Please check your data.",
-                successMsg: "Registration Successful! Please login."
+                successMsg: "Registration successful. Please sign in."
             }
         };
-        let currentLang = localStorage.getItem('register_lang') || 'id';
+        let currentLang = localStorage.getItem('lang') || localStorage.getItem('register_lang') || 'id';
         let currentTheme = localStorage.getItem('theme') || localStorage.getItem('register_theme') || 'dark';
 
         function applyLanguage(lang) {
@@ -171,6 +171,8 @@ function verifyCSRFToken($token) {
             document.getElementById('registerBtn').innerText = t.btn;
             const loginPara = document.getElementById('loginLink');
             loginPara.innerHTML = `${t.loginText}<a href="login.php" class="text-blue-400 hover:underline">${t.loginLink}</a>`;
+            localStorage.setItem('lang', lang);
+            localStorage.setItem('ui_lang', lang);
             localStorage.setItem('register_lang', lang);
         }
 

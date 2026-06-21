@@ -1,12 +1,13 @@
 <?php 
 include 'includes/db.php'; 
+include 'includes/lang.php';
 if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
 $user = $_SESSION['user'];
 $role = $user['role'];
 
 // Hanya admin yang boleh mengakses
 if ($role !== 'admin') {
-    die("Akses ditolak. Halaman ini hanya untuk admin.");
+    die(t('access_denied'));
 }
 
 // Proses tandai sudah dibaca
@@ -43,10 +44,10 @@ include 'includes/navbar.php';
 <main class="max-w-5xl mx-auto p-6 md:p-10">
     <div class="flex justify-between items-center border-b border-gray-800 pb-5 mb-8">
         <div>
-            <h2 class="text-3xl font-extrabold text-white tracking-wide">Daftar Keluhan</h2>
-            <p class="text-gray-400 text-sm mt-1">Total keluhan belum dibaca: <span class="font-bold text-yellow-400"><?= $unread_count ?></span></p>
+        <h2 class="text-3xl font-extrabold text-white tracking-wide"><?= t('complaints_list') ?></h2>
+            <p class="text-gray-400 text-sm mt-1"><?= t('total_unread_complaints') ?>: <span class="font-bold text-yellow-400"><?= $unread_count ?></span></p>
         </div>
-        <a href="index.php" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white"><i class="fas fa-arrow-left mr-2"></i> Kembali</a>
+        <a href="index.php" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white"><i class="fas fa-arrow-left mr-2"></i> <?= t('back') ?></a>
     </div>
 
     <div class="space-y-4">
@@ -64,9 +65,9 @@ include 'includes/navbar.php';
                         </div>
                         <div class="flex gap-2">
                             <?php if ($r['status'] == 'belum_dibaca'): ?>
-                                <a href="?tandai_dibaca=<?= $r['id'] ?>" class="text-xs bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded text-white">Tandai Dibaca</a>
+                                <a href="?tandai_dibaca=<?= $r['id'] ?>" class="text-xs bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded text-white"><?= t('mark_read') ?></a>
                             <?php endif; ?>
-                            <a href="?hapus=<?= $r['id'] ?>" onclick="return confirm('Hapus keluhan ini?')" class="text-xs bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white">Hapus</a>
+                            <a href="?hapus=<?= $r['id'] ?>" onclick="return confirm('<?= t('delete_notification_confirm') ?>')" class="text-xs bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white"><?= t('delete') ?></a>
                         </div>
                     </div>
                 </div>
@@ -74,7 +75,7 @@ include 'includes/navbar.php';
         <?php else: ?>
             <div class="bg-surface border border-dashed border-gray-700 rounded-2xl p-12 text-center">
                 <i class="fas fa-inbox text-5xl text-gray-600 mb-3"></i>
-                <p class="text-gray-400">Belum ada keluhan dari pengguna.</p>
+                <p class="text-gray-400"><?= t('no_complaints') ?></p>
             </div>
         <?php endif; ?>
     </div>

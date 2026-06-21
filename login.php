@@ -17,7 +17,7 @@ if (isset($_POST['login'])) {
     $password = $_POST['password'] ?? '';
 
     if (empty($email) || empty($password)) {
-        $error_msg = "Email dan password harus diisi!";
+        $error_msg = "Email dan kata sandi harus diisi.";
     } else {
         $stmt = $conn->prepare("SELECT fail_count, block_level, blocked_until_ts FROM login_attempts WHERE email = ?");
         $stmt->bind_param("s", $email);
@@ -73,7 +73,7 @@ if (isset($_POST['login'])) {
                     $fail_count = 0;
                     $error_msg = "Terlalu banyak percobaan gagal. Silakan coba lagi nanti.";
                 } else {
-                    $error_msg = "Email atau password salah!";
+                    $error_msg = "Email atau kata sandi salah.";
                 }
 
                 if ($row) {
@@ -166,10 +166,10 @@ if (isset($_POST['login'])) {
     </div>
     <script>
         const translations = {
-            id: { title: "MY TASK", subtitle: "Masuk ke sistem pengumpulan tugas", emailLabel: "Email", passLabel: "Password", loginBtn: "Masuk", registerText: "Belum punya akun? ", registerLink: "Daftar di sini", errorDefault: "Email atau password salah!" },
-            en: { title: "MY TASK", subtitle: "Login to assignment system", emailLabel: "Email", passLabel: "Password", loginBtn: "Login", registerText: "Don't have an account? ", registerLink: "Register here", errorDefault: "Invalid email or password!" }
+            id: { title: "MY TASK", subtitle: "Masuk ke sistem pengumpulan tugas", emailLabel: "Email", passLabel: "Kata sandi", loginBtn: "Masuk", registerText: "Belum punya akun? ", registerLink: "Daftar di sini", errorDefault: "Email atau kata sandi salah." },
+            en: { title: "MY TASK", subtitle: "Sign in to the assignment system", emailLabel: "Email", passLabel: "Password", loginBtn: "Sign In", registerText: "Don't have an account? ", registerLink: "Register here", errorDefault: "Invalid email or password." }
         };
-        let currentLang = localStorage.getItem('login_lang') || 'id';
+        let currentLang = localStorage.getItem('lang') || localStorage.getItem('login_lang') || 'id';
         let currentTheme = localStorage.getItem('theme') || localStorage.getItem('login_theme') || 'dark';
         function applyLanguage(lang) {
             const t = translations[lang];
@@ -181,6 +181,8 @@ if (isset($_POST['login'])) {
             document.getElementById('registerLink').innerHTML = `${t.registerText}<a href="register.php" class="text-blue-400 hover:underline">${t.registerLink}</a>`;
             const errorMsgElem = document.querySelector('#errorMsg');
             if (errorMsgElem && errorMsgElem.innerText.includes('Email atau password salah')) errorMsgElem.innerText = t.errorDefault;
+            localStorage.setItem('lang', lang);
+            localStorage.setItem('ui_lang', lang);
             localStorage.setItem('login_lang', lang);
         }
         function applyTheme(theme) {
@@ -196,7 +198,10 @@ if (isset($_POST['login'])) {
             localStorage.setItem('theme', theme);
             localStorage.setItem('login_theme', theme);
         }
-        document.getElementById('langToggle').addEventListener('click', () => { currentLang = (currentLang === 'id') ? 'en' : 'id'; applyLanguage(currentLang); });
+        document.getElementById('langToggle').addEventListener('click', () => {
+            currentLang = (currentLang === 'id') ? 'en' : 'id';
+            applyLanguage(currentLang);
+        });
         document.getElementById('themeToggle').addEventListener('click', () => { currentTheme = (currentTheme === 'dark') ? 'light' : 'dark'; applyTheme(currentTheme); });
         applyLanguage(currentLang);
         applyTheme(currentTheme);

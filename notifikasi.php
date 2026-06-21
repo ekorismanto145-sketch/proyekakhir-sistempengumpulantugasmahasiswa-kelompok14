@@ -29,7 +29,7 @@ if (isset($_GET['read'])) {
 // Tandai semua - butuh CSRF
 if (isset($_POST['mark_all_read'])) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
     $stmt = $conn->prepare("UPDATE activities SET is_read = 1 WHERE user_id = ?");
     $stmt->bind_param("i", $user_id);
@@ -51,7 +51,7 @@ if (isset($_GET['delete'])) {
 // Hapus semua - butuh CSRF
 if (isset($_POST['delete_all'])) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
     $stmt = $conn->prepare("DELETE FROM activities WHERE user_id = ?");
     $stmt->bind_param("i", $user_id);
@@ -75,20 +75,20 @@ $query_notif = $stmt->get_result();
 <main class="max-w-4xl mx-auto p-6 md:p-10">
     <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-800 pb-6 mb-8 gap-4">
         <div>
-            <h2 class="text-3xl font-extrabold text-white tracking-wide">Notifikasi</h2>
+            <h2 class="text-3xl font-extrabold text-white tracking-wide"><?= t('notifikasi') ?></h2>
             <div class="flex gap-4 mt-2">
-                <a href="?view=all" class="text-sm <?= $filter == 'all' ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-gray-300' ?>">Semua</a>
-                <a href="?view=unread" class="text-sm <?= $filter == 'unread' ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-gray-300' ?>">Belum Dibaca</a>
+                <a href="?view=all" class="text-sm <?= $filter == 'all' ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-gray-300' ?>"><?= t('all') ?></a>
+                <a href="?view=unread" class="text-sm <?= $filter == 'unread' ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-gray-300' ?>"><?= t('unread') ?></a>
             </div>
         </div>
         <div class="flex gap-2">
-            <form action="" method="POST" onsubmit="return confirm('Tandai semua pesan sebagai dibaca?')">
+            <form action="" method="POST" onsubmit="return confirm('<?= t('mark_all_read_confirm') ?>')">
                 <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
-                <button type="submit" name="mark_all_read" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold rounded-lg transition"><i class="fas fa-check-double mr-2"></i>Tandai Semua Dibaca</button>
+                <button type="submit" name="mark_all_read" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold rounded-lg transition"><i class="fas fa-check-double mr-2"></i><?= t('mark_all_read') ?></button>
             </form>
-            <form action="" method="POST" onsubmit="return confirm('Hapus seluruh riwayat notifikasi?')">
+            <form action="" method="POST" onsubmit="return confirm('<?= t('delete_notifications_confirm') ?>')">
                 <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
-                <button type="submit" name="delete_all" class="px-4 py-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white text-xs font-bold rounded-lg transition"><i class="fas fa-trash-alt mr-2"></i>Hapus Semua</button>
+                <button type="submit" name="delete_all" class="px-4 py-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white text-xs font-bold rounded-lg transition"><i class="fas fa-trash-alt mr-2"></i><?= t('delete_all') ?></button>
             </form>
         </div>
     </div>
@@ -118,15 +118,15 @@ $query_notif = $stmt->get_result();
                         </a>
                         <?php if ($role === 'admin' && $notif['tipe'] === 'keluhan'): ?>
                             <a href="keluhan.php" class="inline-flex items-center mt-3 px-3 py-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 text-xs font-bold border border-yellow-500/30 hover:bg-yellow-500/20 transition">
-                                <i class="fas fa-envelope-open-text mr-2"></i> Buka keluhan
+                                <i class="fas fa-envelope-open-text mr-2"></i> <?= t('open_complaint') ?>
                             </a>
                         <?php endif; ?>
                     </div>
-                    <a href="?delete=<?= $notif['id'] ?>" onclick="return confirm('Hapus notifikasi ini?')" class="text-gray-600 hover:text-red-500 transition px-2 opacity-0 group-hover:opacity-100"><i class="fas fa-times"></i></a>
+                    <a href="?delete=<?= $notif['id'] ?>" onclick="return confirm('<?= t('delete_notification_confirm') ?>')" class="text-gray-600 hover:text-red-500 transition px-2 opacity-0 group-hover:opacity-100"><i class="fas fa-times"></i></a>
                 </div>
             <?php endwhile; ?>
         <?php else: ?>
-            <div class="py-20 text-center"><i class="fas fa-bell-slash text-5xl text-gray-800 mb-4"></i><p class="text-gray-500 font-medium">Tidak ada notifikasi yang ditemukan.</p></div>
+            <div class="py-20 text-center"><i class="fas fa-bell-slash text-5xl text-gray-800 mb-4"></i><p class="text-gray-500 font-medium"><?= t('no_notifications_found') ?></p></div>
         <?php endif; ?>
     </div>
 </main>

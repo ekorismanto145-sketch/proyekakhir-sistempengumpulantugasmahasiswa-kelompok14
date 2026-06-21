@@ -21,7 +21,7 @@ function verifyCSRFToken($token) {
 // =========================================================
 if (isset($_POST['simpan_profil'])) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
     if (isset($_POST['bahasa'])) { $_SESSION['lang'] = $_POST['bahasa']; }
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === 0) {
@@ -48,18 +48,18 @@ $password_error = "";
 $password_success = "";
 if (isset($_POST['ganti_password'])) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
     $old_password = $_POST['old_password'] ?? '';
     $new_password = $_POST['new_password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
     
     if (empty($old_password) || empty($new_password) || empty($confirm_password)) {
-        $password_error = "Semua field password harus diisi.";
+        $password_error = t('all_fields_required');
     } elseif (strlen($new_password) < 6) {
-        $password_error = "Password baru minimal 6 karakter.";
+        $password_error = t('new_password_minimum');
     } elseif ($new_password !== $confirm_password) {
-        $password_error = "Konfirmasi password baru tidak cocok.";
+        $password_error = t('password_confirmation_mismatch');
     } else {
         // Ambil hash password lama dari database
         $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
@@ -74,18 +74,18 @@ if (isset($_POST['ganti_password'])) {
             $update = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
             $update->bind_param("si", $new_hash, $user['id']);
             if ($update->execute()) {
-                $password_success = "Password berhasil diubah. Silakan login kembali dengan password baru.";
+                $password_success = t('password_update_success');
                 // Opsional: logout user setelah ganti password? Biarkan saja, tapi lebih aman logout.
                 // Kita bisa logout otomatis dengan menghapus session.
                 session_destroy();
                 header("Location: login.php?pesan=password_changed");
                 exit();
             } else {
-                $password_error = "Gagal mengupdate password. Coba lagi.";
+                $password_error = t('password_update_failed');
             }
             $update->close();
         } else {
-            $password_error = "Password lama salah.";
+            $password_error = t('old_password_wrong');
         }
     }
 }
@@ -97,7 +97,7 @@ include 'includes/navbar.php';
 <main class="max-w-4xl mx-auto p-6 md:p-10">
     <?php if(isset($_GET['pesan']) && $_GET['pesan'] == 'sukses'): ?>
         <div class="mb-6 px-4 py-3 bg-green-500/20 border border-green-500 text-green-400 rounded-xl flex items-center justify-between">
-            <span><i class="fas fa-check-circle mr-2"></i> Perubahan profil berhasil disimpan!</span>
+            <span><i class="fas fa-check-circle mr-2"></i> <?= t('profile_saved_success') ?></span>
             <button onclick="this.parentElement.style.display='none'" class="hover:text-white"><i class="fas fa-times"></i></button>
         </div>
     <?php endif; ?>
@@ -131,14 +131,14 @@ include 'includes/navbar.php';
                     <div class="md:col-span-2">
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><?= t('bahasa') ?></label>
                         <select name="bahasa" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl">
-                            <option value="id" <?= ($_SESSION['lang'] == 'id') ? 'selected' : '' ?>>Bahasa Indonesia</option>
-                            <option value="en" <?= ($_SESSION['lang'] == 'en') ? 'selected' : '' ?>>English (US)</option>
+                        <option value="id" <?= ($_SESSION['lang'] == 'id') ? 'selected' : '' ?>><?= t('language_indonesia') ?></option>
+                        <option value="en" <?= ($_SESSION['lang'] == 'en') ? 'selected' : '' ?>><?= t('language_english') ?></option>
                         </select>
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end">
                     <button type="submit" name="simpan_profil" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition">
-                        <i class="fas fa-save mr-2"></i> <?= t('simpan') ?>
+                        <i class="fas fa-save mr-2"></i> <?= t('save_profile') ?>
                     </button>
                 </div>
             </section>
@@ -148,25 +148,25 @@ include 'includes/navbar.php';
         <form action="" method="POST" class="mt-6">
             <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
             <section class="bg-surface p-6 md:p-8 rounded-2xl shadow-xl border border-gray-800">
-                <h3 class="font-bold text-white text-lg mb-4 flex items-center border-b border-gray-800 pb-4"><i class="fas fa-key mr-3 text-yellow-500 text-xl"></i> Ganti Password</h3>
+                <h3 class="font-bold text-white text-lg mb-4 flex items-center border-b border-gray-800 pb-4"><i class="fas fa-key mr-3 text-yellow-500 text-xl"></i> <?= t('ganti_sandi') ?></h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Password Lama</label>
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><?= t('old_password_label') ?></label>
                         <input type="password" name="old_password" required class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Password Baru</label>
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><?= t('new_password_label') ?></label>
                         <input type="password" name="new_password" required minlength="6" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl">
-                        <p class="text-xs text-gray-500 mt-1">Minimal 6 karakter</p>
+                        <p class="text-xs text-gray-500 mt-1"><?= t('minimum_6_chars') ?></p>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Konfirmasi Password Baru</label>
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><?= t('confirm_new_password_label') ?></label>
                         <input type="password" name="confirm_password" required class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl">
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end">
                     <button type="submit" name="ganti_password" class="px-6 py-2.5 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-xl transition">
-                        <i class="fas fa-sync-alt mr-2"></i> Ganti Password
+                        <i class="fas fa-sync-alt mr-2"></i> <?= t('ganti_sandi') ?>
                     </button>
                 </div>
             </section>

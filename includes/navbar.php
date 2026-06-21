@@ -96,12 +96,12 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
             <a href="tugas.php" class="flex items-center p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition"><i class="fas fa-tasks mr-3 w-5 text-center"></i> <?= t('daftar_tugas') ?></a>
 
             <?php if ($current_role === 'dosen'): ?>
-                <a href="rekap_nilai.php" class="flex items-center p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition"><i class="fas fa-file-pdf mr-3 w-5 text-center"></i> Rekap Nilai</a>
+                <a href="rekap_nilai.php" class="flex items-center p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition"><i class="fas fa-file-pdf mr-3 w-5 text-center"></i> <?= t('rekap_nilai') ?></a>
             <?php endif; ?>
 
             <?php if ($current_role === 'admin'): ?>
                 <a href="keluhan.php" class="flex items-center justify-between p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition">
-                    <span class="flex items-center"><i class="fas fa-envelope-open-text mr-3 w-5 text-center"></i> Keluhan</span>
+                    <span class="flex items-center"><i class="fas fa-envelope-open-text mr-3 w-5 text-center"></i> <?= t('complaints') ?></span>
                     <?php if ($admin_keluhan_baru > 0): ?>
                         <span class="ml-3 inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-yellow-500/15 text-yellow-400 text-[11px] font-bold border border-yellow-500/30"><?= $admin_keluhan_baru ?></span>
                     <?php endif; ?>
@@ -113,7 +113,7 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
                 <a href="bantuan.php" class="flex items-center p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition"><i class="fas fa-question-circle mr-3 w-5 text-center"></i> <?= t('bantuan') ?></a>
             <?php endif; ?>
             <?php if ($current_role === 'admin'): ?>
-                <a href="kalender.php" class="flex items-center p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition"><i class="fas fa-calendar-day mr-3 w-5 text-center"></i> Kelola Kalender</a>
+                <a href="kalender.php" class="flex items-center p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition"><i class="fas fa-calendar-day mr-3 w-5 text-center"></i> <?= t('kelola_kalender') ?></a>
             <?php endif; ?>
         </div>
     </div>
@@ -129,7 +129,7 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
         <?php $currentLang = $_SESSION['lang'] ?? 'id'; ?>
         <button id="themeToggleBtn" type="button" onclick="toggleTheme()" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-700 bg-darkbg text-gray-300 hover:bg-gray-800 transition text-sm font-medium">
             <i id="themeToggleIcon" class="fas fa-moon text-blue-400"></i>
-            <span id="themeToggleLabel">Dark</span>
+            <span id="themeToggleLabel"><?= t('dark') ?></span>
         </button>
         <div class="relative">
             <button id="langMenuBtn" class="flex items-center space-x-1 bg-darkbg border border-gray-700 rounded-full px-3 py-1.5 text-sm font-medium text-gray-300 hover:bg-gray-800 transition">
@@ -138,8 +138,8 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
                 <i class="fas fa-chevron-down text-xs ml-1"></i>
             </button>
             <div id="langDropdown" class="dropdown-menu absolute right-0 mt-2 w-32 bg-surface border border-gray-700 rounded-xl shadow-lg z-50 overflow-hidden hidden">
-                <a href="?toggle_lang=id" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 transition">🇮🇩 Indonesia</a>
-                <a href="?toggle_lang=en" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 transition">🇬🇧 English</a>
+                <a href="?toggle_lang=id" onclick="localStorage.setItem('lang','id'); localStorage.setItem('ui_lang','id');" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 transition">ID - <?= t('language_indonesia') ?></a>
+                <a href="?toggle_lang=en" onclick="localStorage.setItem('lang','en'); localStorage.setItem('ui_lang','en');" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 transition">EN - <?= t('language_english') ?></a>
             </div>
         </div>
 
@@ -152,23 +152,23 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
                     <p class="text-sm font-medium text-gray-300"><?= htmlspecialchars($_SESSION['user']['email'] ?? 'user@email.com'); ?></p>
                     <div class="w-16 h-16 rounded-full mx-auto my-4 bg-gray-800 border-2 border-gray-600 overflow-hidden"><img src="<?= $avatar_url ?>" class="w-full h-full object-cover" alt="Profile"></div>
                     <p class="text-lg text-[var(--text-main)] font-bold">Halo, <?= htmlspecialchars($_SESSION['user']['nama'] ?? 'User'); ?>!</p>
-                    <a href="settings.php" class="inline-block mt-3 px-4 py-2 border border-gray-600 rounded-full text-xs text-gray-300 hover:bg-gray-800 transition w-full text-center">Kelola Akun Google Anda</a>
+                    <a href="settings.php" class="inline-block mt-3 px-4 py-2 border border-gray-600 rounded-full text-xs text-gray-300 hover:bg-gray-800 transition w-full text-center"><?= t('manage_account_google') ?></a>
                 </div>
                 <?php if($is_real_admin): ?>
                 <div class="py-2 bg-surface border-b border-gray-700">
-                    <p class="text-[10px] font-bold text-gray-500 px-5 uppercase tracking-widest mb-1">Lihat Web Sebagai:</p>
-                    <a href="?switch_role=admin" class="w-full text-left px-5 py-2.5 hover:bg-gray-800 text-gray-300 hover:text-white flex items-center text-sm <?= ($current_role == 'admin') ? 'text-red-400 font-bold bg-darkbg' : '' ?>"><i class="fas fa-user-shield mr-4 w-4 text-center"></i> Admin</a>
-                    <a href="?switch_role=dosen" class="w-full text-left px-5 py-2.5 hover:bg-gray-800 text-gray-300 hover:text-white flex items-center text-sm <?= ($current_role == 'dosen') ? 'text-purple-400 font-bold bg-darkbg' : '' ?>"><i class="fas fa-chalkboard-teacher mr-4 w-4 text-center"></i> Dosen</a>
-                    <a href="?switch_role=mahasiswa" class="w-full text-left px-5 py-2.5 hover:bg-gray-800 text-gray-300 hover:text-white flex items-center text-sm <?= ($current_role == 'mahasiswa') ? 'text-blue-400 font-bold bg-darkbg' : '' ?>"><i class="fas fa-user-graduate mr-4 w-4 text-center"></i> Mahasiswa</a>
+                    <p class="text-[10px] font-bold text-gray-500 px-5 uppercase tracking-widest mb-1"><?= t('show_as') ?>:</p>
+                    <a href="?switch_role=admin" class="w-full text-left px-5 py-2.5 hover:bg-gray-800 text-gray-300 hover:text-white flex items-center text-sm <?= ($current_role == 'admin') ? 'text-red-400 font-bold bg-darkbg' : '' ?>"><i class="fas fa-user-shield mr-4 w-4 text-center"></i> <?= t('admin_role') ?></a>
+                    <a href="?switch_role=dosen" class="w-full text-left px-5 py-2.5 hover:bg-gray-800 text-gray-300 hover:text-white flex items-center text-sm <?= ($current_role == 'dosen') ? 'text-purple-400 font-bold bg-darkbg' : '' ?>"><i class="fas fa-chalkboard-teacher mr-4 w-4 text-center"></i> <?= t('dosen_role') ?></a>
+                    <a href="?switch_role=mahasiswa" class="w-full text-left px-5 py-2.5 hover:bg-gray-800 text-gray-300 hover:text-white flex items-center text-sm <?= ($current_role == 'mahasiswa') ? 'text-blue-400 font-bold bg-darkbg' : '' ?>"><i class="fas fa-user-graduate mr-4 w-4 text-center"></i> <?= t('mahasiswa_role') ?></a>
                 </div>
                 <?php endif; ?>
                 <div class="py-2 bg-surface">
-                    <a href="logout.php?action=add_account" class="w-full text-left px-5 py-3 hover:bg-gray-800 text-gray-300 hover:text-white flex items-center text-sm"><i class="fas fa-user-plus mr-4 w-4 text-center"></i> Tambahkan akun lainnya</a>
-                    <a href="settings.php" class="w-full text-left px-5 py-3 hover:bg-gray-800 text-gray-300 hover:text-white flex items-center text-sm"><i class="fas fa-laptop mr-4 w-4 text-center"></i> Kelola akun di perangkat ini</a>
+                    <a href="logout.php?action=add_account" class="w-full text-left px-5 py-3 hover:bg-gray-800 text-gray-300 hover:text-white flex items-center text-sm"><i class="fas fa-user-plus mr-4 w-4 text-center"></i> <?= t('tambahkan_akun_lainnya') ?></a>
+                    <a href="settings.php" class="w-full text-left px-5 py-3 hover:bg-gray-800 text-gray-300 hover:text-white flex items-center text-sm"><i class="fas fa-laptop mr-4 w-4 text-center"></i> <?= t('kelola_akun_perangkat') ?></a>
                 </div>
                 <div class="py-3 bg-darkbg border-t border-gray-700 flex justify-center space-x-3 text-[11px] text-gray-500">
-                    <a href="privasi.php" class="hover:text-gray-300">Kebijakan Privasi</a> • 
-                    <a href="persyaratan.php" class="hover:text-gray-300">Persyaratan Layanan</a>
+                    <a href="privasi.php" class="hover:text-gray-300"><?= t('kebijakan_privasi') ?></a> • 
+                    <a href="persyaratan.php" class="hover:text-gray-300"><?= t('persyaratan_layanan') ?></a>
                 </div>
             </div>
         </div>
@@ -186,6 +186,10 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
         langBtn.addEventListener('click', (e) => { e.stopPropagation(); langDropdown.classList.toggle('hidden'); langDropdown.classList.toggle('active'); });
         window.addEventListener('click', () => { langDropdown.classList.add('hidden'); langDropdown.classList.remove('active'); });
     }
+    if (!localStorage.getItem('lang') && '<?php echo $currentLang; ?>') {
+        localStorage.setItem('lang', '<?php echo $currentLang; ?>');
+        localStorage.setItem('ui_lang', '<?php echo $currentLang; ?>');
+    }
 </script>
 <script>
     function syncThemeToggleButton() {
@@ -199,13 +203,13 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
         if (isLight) {
             icon.classList.remove('fa-moon', 'text-blue-400');
             icon.classList.add('fa-sun', 'text-yellow-400');
-            label.textContent = 'Light';
+            label.textContent = '<?= t('light') ?>';
             btn.classList.add('border-yellow-500/30');
             btn.classList.remove('border-gray-700');
         } else {
             icon.classList.remove('fa-sun', 'text-yellow-400');
             icon.classList.add('fa-moon', 'text-blue-400');
-            label.textContent = 'Dark';
+            label.textContent = '<?= t('dark') ?>';
             btn.classList.add('border-gray-700');
             btn.classList.remove('border-yellow-500/30');
         }

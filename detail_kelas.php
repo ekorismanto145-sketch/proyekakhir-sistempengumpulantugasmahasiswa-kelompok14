@@ -46,17 +46,17 @@ if ($role === 'admin') {
     $allowed = $stmt_cek->get_result()->num_rows > 0;
     $stmt_cek->close();
 }
-if (!$allowed) { die("Anda tidak memiliki akses ke kelas ini."); }
+if (!$allowed) { die(t('access_denied_class')); }
 
 // =========================================================
 // PROSES UPLOAD MATERI (DOSEN/ADMIN)
 // =========================================================
 if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
     if (!$can_manage_materials) {
-        die("Anda tidak berwenang mengunggah materi di kelas ini.");
+        die(t('unauthorized_material_upload'));
     }
 
     $judul_materi = trim($_POST['judul_materi'] ?? '');
@@ -69,11 +69,11 @@ if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) 
     ];
 
     if ($judul_materi === '') {
-        die("Judul materi wajib diisi.");
+        die(t('material_title_required'));
     }
 
     if (!isset($_FILES['file_materi']) || $_FILES['file_materi']['error'] !== 0) {
-        die("File materi wajib diunggah.");
+        die(t('material_file_required'));
     }
 
     $tmp_name = $_FILES['file_materi']['tmp_name'];
@@ -108,7 +108,7 @@ if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) 
         $stmt_mat->execute();
         $stmt_mat->close();
 
-        $desc_materi_mhs = "Dosen membagikan materi baru: " . $judul_materi . " di kelas " . $kelas['nama_kelas'];
+        $desc_materi_mhs = t('activity_material_shared_by_teacher_prefix') . $judul_materi . ' di kelas ' . $kelas['nama_kelas'];
         $stmt_member = $conn->prepare("SELECT mahasiswa_id FROM class_members WHERE class_id = ?");
         $stmt_member->bind_param("i", $class_id);
         $stmt_member->execute();
@@ -121,7 +121,7 @@ if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) 
         }
         $stmt_member->close();
 
-        $desc_materi_dosen = "Anda telah membagikan materi baru: " . $judul_materi;
+        $desc_materi_dosen = t('activity_material_shared_by_you_prefix') . $judul_materi;
         $ins_dosen = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'materi')");
         $ins_dosen->bind_param("is", $user['id'], $desc_materi_dosen);
         $ins_dosen->execute();
@@ -140,7 +140,7 @@ if (isset($_POST['upload_materi']) && ($role === 'dosen' || $role === 'admin')) 
 // =========================================================
 if (isset($_GET['leave']) && $role === 'mahasiswa') {
     if (!isset($_GET['csrf_token']) || !verifyCSRFToken($_GET['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
     $leave = $conn->prepare("DELETE FROM class_members WHERE class_id = ? AND mahasiswa_id = ?");
     $leave->bind_param("ii", $class_id, $user['id']);
@@ -155,7 +155,7 @@ if (isset($_GET['leave']) && $role === 'mahasiswa') {
 // =========================================================
 if (isset($_POST['delete_class']) && $is_owner) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
 
     // 1. Ambil semua mahasiswa anggota kelas ini
@@ -170,7 +170,7 @@ if (isset($_POST['delete_class']) && $is_owner) {
     $memberStmt->close();
 
     // 2. Buat pesan notifikasi
-    $desc = "Kelas '" . $kelas['nama_kelas'] . "' telah dihapus oleh " . ($role === 'admin' ? 'Admin' : $user['nama']);
+    $desc = t('activity_class_deleted_prefix') . "'" . $kelas['nama_kelas'] . "'" . t('activity_class_deleted_suffix') . ($role === 'admin' ? t('admin_role') : $user['nama']);
 
     // 3. Insert notifikasi untuk setiap mahasiswa anggota
     foreach ($memberIds as $mhs_id) {
@@ -201,10 +201,10 @@ if (isset($_POST['delete_class']) && $is_owner) {
 // =========================================================
 if (isset($_POST['buat_tugas']) && ($role === 'dosen' || $role === 'admin')) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
     if ($role === 'dosen' && $kelas['dosen_id'] != $user['id']) {
-        die("Anda tidak berwenang membuat tugas di kelas ini.");
+        die(t('unauthorized_task_create'));
     }
     $judul = trim($_POST['judul']);
     $deskripsi = trim($_POST['deskripsi']);
@@ -220,7 +220,7 @@ if (isset($_POST['buat_tugas']) && ($role === 'dosen' || $role === 'admin')) {
     $stmt2->execute();
     $stmt2->close();
     
-    $desc_mahasiswa = "Dosen memberikan tugas baru: " . $judul . " di kelas " . $kelas['nama_kelas'];
+    $desc_mahasiswa = t('activity_task_shared_by_teacher_prefix') . $judul . ' di kelas ' . $kelas['nama_kelas'];
     $stmt_member = $conn->prepare("SELECT mahasiswa_id FROM class_members WHERE class_id = ?");
     $stmt_member->bind_param("i", $class_id);
     $stmt_member->execute();
@@ -232,7 +232,7 @@ if (isset($_POST['buat_tugas']) && ($role === 'dosen' || $role === 'admin')) {
         $ins->close();
     }
     $stmt_member->close();
-    $desc_dosen = "Anda telah membuat tugas baru: " . $judul;
+    $desc_dosen = t('activity_task_shared_by_you_prefix') . $judul;
     $ins_dosen = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'tugas')");
     $ins_dosen->bind_param("is", $user['id'], $desc_dosen);
     $ins_dosen->execute();
@@ -262,51 +262,51 @@ include 'includes/navbar.php';
 <main class="max-w-5xl mx-auto p-4 md:p-8">
     <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'deadline_invalid'): ?>
         <div class="mb-4 px-4 py-3 rounded-xl border bg-red-500/20 border-red-500 text-red-300">
-            <i class="fas fa-exclamation-circle mr-2"></i> Deadline tidak boleh kurang dari waktu saat ini.
+            <i class="fas fa-exclamation-circle mr-2"></i> <?= t('task_deadline_invalid') ?>
         </div>
     <?php endif; ?>
     <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'materi_sukses'): ?>
         <div class="mb-4 px-4 py-3 rounded-xl border bg-green-500/20 border-green-500 text-green-300">
-            <i class="fas fa-check-circle mr-2"></i> Materi berhasil diunggah.
+            <i class="fas fa-check-circle mr-2"></i> <?= t('material_uploaded_success') ?>
         </div>
     <?php endif; ?>
     <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'materi_gagal'): ?>
         <div class="mb-4 px-4 py-3 rounded-xl border bg-red-500/20 border-red-500 text-red-300">
-            <i class="fas fa-exclamation-circle mr-2"></i> Gagal mengunggah materi.
+            <i class="fas fa-exclamation-circle mr-2"></i> <?= t('material_upload_failed') ?>
         </div>
     <?php endif; ?>
     <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'materi_format_salah'): ?>
         <div class="mb-4 px-4 py-3 rounded-xl border bg-orange-500/20 border-orange-500 text-orange-300">
-            <i class="fas fa-exclamation-triangle mr-2"></i> Format materi ditolak. Harap unggah PDF atau Word.
+            <i class="fas fa-exclamation-triangle mr-2"></i> <?= t('material_format_rejected') ?>
         </div>
     <?php endif; ?>
     <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'materi_terlalu_besar'): ?>
         <div class="mb-4 px-4 py-3 rounded-xl border bg-red-500/20 border-red-500 text-red-300">
-            <i class="fas fa-exclamation-triangle mr-2"></i> File materi terlalu besar. Maksimal 10MB.
+            <i class="fas fa-exclamation-triangle mr-2"></i> <?= t('material_too_large') ?>
         </div>
     <?php endif; ?>
 
     <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
         <a href="index.php" class="inline-flex items-center text-sm text-gray-400 hover:text-white transition">
-            <i class="fas fa-arrow-left mr-2"></i> Kembali ke Dashboard
+            <i class="fas fa-arrow-left mr-2"></i> <?= t('back_to_dashboard') ?>
         </a>
         <?php if ($is_owner): ?>
             <div class="flex gap-2 items-center flex-wrap">
                 <a href="edit_kelas.php?id=<?= $class_id ?>" class="px-3 py-1.5 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-bold rounded-lg transition">
-                    <i class="fas fa-edit mr-1"></i> Edit Kelas
+                    <i class="fas fa-edit mr-1"></i> <?= t('edit_kelas') ?>
                 </a>
-                <form method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus kelas ini? Semua tugas dan anggota akan hilang.')">
+                <form method="POST" class="inline" onsubmit="return confirm('<?= t('delete_class_confirm') ?>')">
                     <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
                     <button type="submit" name="delete_class" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition">
-                        <i class="fas fa-trash-alt mr-1"></i> Hapus Kelas
+                        <i class="fas fa-trash-alt mr-1"></i> <?= t('hapus_kelas') ?>
                     </button>
                 </form>
             </div>
         <?php elseif ($role === 'mahasiswa'): ?>
             <a href="?leave=1&csrf_token=<?= generateCSRFToken(); ?>" 
-               onclick="return confirm('Yakin ingin keluar dari kelas ini?')" 
-               class="px-3 py-1.5 bg-red-600/50 hover:bg-red-600 text-white text-xs font-bold rounded-lg transition">
-                <i class="fas fa-sign-out-alt mr-1"></i> Keluar Kelas
+               onclick="return confirm('<?= t('leave_class_confirm') ?>')" 
+                class="px-3 py-1.5 bg-red-600/50 hover:bg-red-600 text-white text-xs font-bold rounded-lg transition">
+                <i class="fas fa-sign-out-alt mr-1"></i> <?= t('keluar_kelas') ?>
             </a>
         <?php endif; ?>
     </div>
@@ -314,10 +314,10 @@ include 'includes/navbar.php';
     <div class="bg-blue-600 rounded-3xl p-6 md:p-10 shadow-2xl mb-8 relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="relative z-10 text-center md:text-left mb-6 md:mb-0">
             <h1 class="text-2xl sm:text-3xl md:text-5xl font-extrabold text-white mb-2 break-words"><?= htmlspecialchars($kelas['nama_kelas']); ?></h1>
-            <p class="text-blue-200 text-sm sm:text-base md:text-lg break-words"><?= htmlspecialchars($kelas['deskripsi']); ?> • Dosen: <?= htmlspecialchars($kelas['nama_dosen']); ?></p>
+            <p class="text-blue-200 text-sm sm:text-base md:text-lg break-words"><?= htmlspecialchars($kelas['deskripsi']); ?> • <?= t('lecturer_label') ?>: <?= htmlspecialchars($kelas['nama_dosen']); ?></p>
         </div>
         <div class="relative z-10 bg-darkbg/50 backdrop-blur-md border border-white/20 p-4 sm:p-5 rounded-2xl text-center w-full md:w-auto min-w-0 md:min-w-[200px]">
-            <p class="text-blue-200 text-xs font-bold uppercase tracking-widest mb-1">Kode Bergabung</p>
+            <p class="text-blue-200 text-xs font-bold uppercase tracking-widest mb-1"><?= t('join_class_code') ?></p>
             <p class="text-2xl sm:text-3xl font-mono font-bold text-white tracking-widest select-all cursor-pointer break-all"><?= htmlspecialchars($kelas['kode_kelas']); ?></p>
         </div>
     </div>
@@ -326,7 +326,7 @@ include 'includes/navbar.php';
         <div class="lg:col-span-2 space-y-6">
             <div class="bg-surface border border-gray-800 rounded-2xl p-5 sm:p-6 shadow-xl">
                 <div class="flex items-center justify-between gap-3 mb-4">
-                    <h3 class="text-xl font-bold text-white border-b border-gray-800 pb-3 w-full"><i class="fas fa-book-open mr-2 text-green-500"></i> Materi Kelas</h3>
+                    <h3 class="text-xl font-bold text-white border-b border-gray-800 pb-3 w-full"><i class="fas fa-book-open mr-2 text-green-500"></i> <?= t('materials_title') ?></h3>
                 </div>
                 <?php if (count($materials) > 0): ?>
                     <div class="space-y-4">
@@ -351,11 +351,11 @@ include 'includes/navbar.php';
                                     <div class="flex flex-wrap gap-2">
                                         <?php if (($materi['mime_type'] ?? '') === 'application/pdf'): ?>
                                             <a href="<?= htmlspecialchars($materi['file_path']) ?>" target="_blank" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition whitespace-nowrap">
-                                                <i class="fas fa-eye mr-1"></i> Preview
+                                                <i class="fas fa-eye mr-1"></i> <?= t('preview') ?>
                                             </a>
                                         <?php endif; ?>
                                         <a href="<?= htmlspecialchars($materi['file_path']) ?>" download class="px-3 py-2 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded-lg transition whitespace-nowrap">
-                                            <i class="fas fa-download mr-1"></i> Unduh
+                                            <i class="fas fa-download mr-1"></i> <?= t('download') ?>
                                         </a>
                                     </div>
                                 </div>
@@ -363,13 +363,13 @@ include 'includes/navbar.php';
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
-                    <div class="bg-darkbg border border-dashed border-gray-700 rounded-2xl p-8 text-center text-gray-500">
-                        Belum ada materi di kelas ini.
+                        <div class="bg-darkbg border border-dashed border-gray-700 rounded-2xl p-8 text-center text-gray-500">
+                        <?= t('no_materials_yet') ?>
                     </div>
                 <?php endif; ?>
             </div>
 
-            <h3 class="text-xl font-bold text-white border-b border-gray-800 pb-3"><i class="fas fa-tasks mr-2 text-blue-500"></i> Tugas Kelas</h3>
+            <h3 class="text-xl font-bold text-white border-b border-gray-800 pb-3"><i class="fas fa-tasks mr-2 text-blue-500"></i> <?= t('task_class_title') ?></h3>
             <?php
             $stmt_tugas = $conn->prepare("SELECT * FROM tasks WHERE class_id = ? ORDER BY created_at DESC");
             $stmt_tugas->bind_param("i", $class_id);
@@ -396,10 +396,10 @@ include 'includes/navbar.php';
                             <?php if ($is_owner): ?>
                                 <button onclick="openDeadlineModal(<?= $tugas['id'] ?>, '<?= date('Y-m-d\TH:i', $deadline_time) ?>')" 
                                         class="text-xs bg-yellow-600 hover:bg-yellow-500 px-2 py-1 rounded text-white">
-                                    <i class="fas fa-edit mr-1"></i> Edit Deadline
+                                    <i class="fas fa-edit mr-1"></i> <?= t('edit_deadline') ?>
                                 </button>
                                 <a href="lihat_pengumpulan.php?task_id=<?= $tugas['id'] ?>" class="text-xs bg-green-600 hover:bg-green-500 px-2 py-1 rounded text-white whitespace-nowrap">
-                                    <i class="fas fa-eye mr-1"></i> Lihat Pengumpulan
+                                    <i class="fas fa-eye mr-1"></i> <?= t('view_submissions') ?>
                                 </a>
                             <?php endif; ?>
                         </div>
@@ -407,55 +407,55 @@ include 'includes/navbar.php';
                     <p class="text-sm text-gray-400 mb-4"><?= nl2br(htmlspecialchars($tugas['deskripsi'])) ?></p>
                     <?php if($role === 'mahasiswa'): ?>
                         <a href="tugas.php" class="inline-block px-4 py-2 bg-darkbg border border-gray-600 hover:border-blue-500 text-gray-300 hover:text-white text-sm font-bold rounded-lg transition">
-                            <i class="fas fa-upload mr-2"></i> Kumpulkan Tugas Ini
+                            <i class="fas fa-upload mr-2"></i> <?= t('kumpulkan_tugas_ini') ?>
                         </a>
                     <?php endif; ?>
                 </div>
             <?php endwhile; else: ?>
-                <div class="bg-surface border border-dashed border-gray-700 rounded-2xl p-8 text-center text-gray-500">Belum ada tugas di kelas ini.</div>
+                <div class="bg-surface border border-dashed border-gray-700 rounded-2xl p-8 text-center text-gray-500"><?= t('no_tasks_in_class') ?></div>
             <?php endif; ?>
         </div>
 
         <?php if($can_manage_materials): ?>
         <div>
             <div class="bg-surface border border-gray-800 rounded-2xl p-5 sm:p-6 shadow-xl md:sticky md:top-24">
-                <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-3"><i class="fas fa-book-medical text-green-500 mr-2"></i> Unggah Materi</h3>
+                <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-3"><i class="fas fa-book-medical text-green-500 mr-2"></i> <?= t('upload_material') ?></h3>
                 <form action="" method="POST" enctype="multipart/form-data" class="space-y-4 mb-6 pb-6 border-b border-gray-800">
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1.5">Judul Materi</label>
+                        <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('material_title') ?></label>
                         <input type="text" name="judul_materi" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-green-500 text-sm" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1.5">Deskripsi</label>
+                        <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('deskripsi') ?></label>
                         <textarea name="deskripsi_materi" rows="3" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-green-500 text-sm resize-none"></textarea>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1.5">File Materi (PDF/Word)</label>
+                        <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('pdf_word') ?></label>
                         <input type="file" name="file_materi" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg text-sm" required>
                     </div>
                     <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
                     <button type="submit" name="upload_materi" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition mt-2">
-                        <i class="fas fa-upload mr-2"></i> Unggah Materi
+                        <i class="fas fa-upload mr-2"></i> <?= t('upload_material') ?>
                     </button>
                 </form>
 
-                <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-3"><i class="fas fa-plus-circle text-green-500 mr-2"></i> Buat Tugas Baru</h3>
+                <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-3"><i class="fas fa-plus-circle text-green-500 mr-2"></i> <?= t('create_new_task') ?></h3>
                 <form action="" method="POST" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1.5">Judul Tugas</label>
+                        <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('task_title') ?></label>
                         <input type="text" name="judul" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-blue-500 text-sm" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1.5">Deskripsi</label>
+                        <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('task_description') ?></label>
                         <textarea name="deskripsi" rows="3" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-blue-500 text-sm resize-none" required></textarea>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1.5">Deadline</label>
+                        <label class="block text-xs font-bold text-gray-400 mb-1.5"><?= t('task_deadline') ?></label>
                         <input type="datetime-local" name="deadline" min="<?= date('Y-m-d\\TH:i') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-3 py-2.5 rounded-lg focus:border-blue-500 text-sm" required>
                     </div>
                     <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
                     <button type="submit" name="buat_tugas" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition mt-2">
-                        <i class="fas fa-paper-plane mr-2"></i> Publikasikan Tugas
+                        <i class="fas fa-paper-plane mr-2"></i> <?= t('publish_task') ?>
                     </button>
                 </form>
             </div>
@@ -468,18 +468,18 @@ include 'includes/navbar.php';
 <div id="deadlineModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center transition-opacity opacity-0">
     <div class="bg-surface border border-gray-700 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300">
         <div class="flex justify-between items-center p-5 border-b border-gray-800 bg-darkbg">
-            <h3 class="text-xl font-bold text-white flex items-center"><i class="fas fa-calendar-alt text-yellow-500 mr-3"></i> Ubah Deadline Tugas</h3>
+            <h3 class="text-xl font-bold text-white flex items-center"><i class="fas fa-calendar-alt text-yellow-500 mr-3"></i> <?= t('edit_deadline') ?></h3>
             <button onclick="closeDeadlineModal()" class="text-gray-500 hover:text-red-500 transition"><i class="fas fa-times text-xl"></i></button>
         </div>
         <form action="edit_deadline.php" method="POST" class="p-6 space-y-4">
             <input type="hidden" name="task_id" id="deadline_task_id">
             <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Deadline Baru</label>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><?= t('deadline_new') ?></label>
                 <input type="datetime-local" name="deadline" id="deadline_date" min="<?= date('Y-m-d\\TH:i') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:border-yellow-500 transition" required>
             </div>
             <div class="flex justify-end gap-3 pt-3">
-                <button type="button" onclick="closeDeadlineModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold">Simpan Perubahan</button>
+                <button type="button" onclick="closeDeadlineModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white"><?= t('batal') ?></button>
+                <button type="submit" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold"><?= t('simpan_perubahan') ?></button>
             </div>
         </form>
     </div>

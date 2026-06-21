@@ -23,7 +23,7 @@ function verifyCSRFToken($token) {
 // PROSES BUAT KELAS
 if (isset($_POST['action_buat']) && ($role === 'dosen' || $role === 'admin')) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
     $nama_kelas = trim($_POST['nama_kelas']);
     $matpel = trim($_POST['mata_pelajaran']);
@@ -37,7 +37,7 @@ if (isset($_POST['action_buat']) && ($role === 'dosen' || $role === 'admin')) {
     $stmt->execute();
     $stmt->close();
 
-    $desc = "Telah membuat kelas baru: " . $nama_kelas;
+    $desc = t('activity_class_created_prefix') . $nama_kelas;
     $stmt_act = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'kelas_baru')");
     $stmt_act->bind_param("is", $dosen_id, $desc);
     $stmt_act->execute();
@@ -50,7 +50,7 @@ if (isset($_POST['action_buat']) && ($role === 'dosen' || $role === 'admin')) {
 // PROSES GABUNG KELAS
 if (isset($_POST['action_gabung']) && $role === 'mahasiswa') {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
     $kode_kelas = strtoupper(trim($_POST['kode_kelas']));
     $mhs_id = $user_id;
@@ -74,7 +74,7 @@ if (isset($_POST['action_gabung']) && $role === 'mahasiswa') {
             $stmt3->execute();
             $stmt3->close();
 
-            $desc = "Telah bergabung ke kelas: " . $nama_kelas;
+            $desc = t('activity_joined_class_prefix') . $nama_kelas;
             $stmt4 = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'gabung')");
             $stmt4->bind_param("is", $mhs_id, $desc);
             $stmt4->execute();
@@ -134,10 +134,10 @@ include 'includes/navbar.php';
     <?php if(isset($_GET['pesan'])): ?>
         <?php 
             $msg = ""; $color = "";
-            if($_GET['pesan'] == 'kelas_dibuat') { $msg = "Kelas baru berhasil dibuat!"; $color = "bg-green-500/20 border-green-500 text-green-400"; }
-            if($_GET['pesan'] == 'berhasil_gabung') { $msg = "Berhasil bergabung ke kelas!"; $color = "bg-blue-500/20 border-blue-500 text-blue-400"; }
-            if($_GET['pesan'] == 'sudah_gabung') { $msg = "Anda sudah terdaftar di kelas ini."; $color = "bg-yellow-500/20 border-yellow-500 text-yellow-400"; }
-            if($_GET['pesan'] == 'kode_salah') { $msg = "Kode kelas tidak ditemukan!"; $color = "bg-red-500/20 border-red-500 text-red-400"; }
+            if($_GET['pesan'] == 'kelas_dibuat') { $msg = t('class_created_success'); $color = "bg-green-500/20 border-green-500 text-green-400"; }
+            if($_GET['pesan'] == 'berhasil_gabung') { $msg = t('join_class_success'); $color = "bg-blue-500/20 border-blue-500 text-blue-400"; }
+            if($_GET['pesan'] == 'sudah_gabung') { $msg = t('already_enrolled'); $color = "bg-yellow-500/20 border-yellow-500 text-yellow-400"; }
+            if($_GET['pesan'] == 'kode_salah') { $msg = t('class_code_not_found'); $color = "bg-red-500/20 border-red-500 text-red-400"; }
         ?>
         <div class="mb-6 px-4 py-3 rounded-xl border <?= $color ?> flex items-center justify-between">
             <span><i class="fas fa-info-circle mr-2"></i> <?= htmlspecialchars($msg) ?></span>
@@ -154,7 +154,7 @@ include 'includes/navbar.php';
             </div>
             <div>
                 <button onclick="openClassModal()" class="px-6 py-3.5 bg-gradient-to-r from-gray-800 to-gray-900 border border-gray-600 hover:border-redaccent text-white font-semibold rounded-xl transition-all flex items-center group">
-                    <i class="fas fa-plus-circle text-redaccent mr-3 group-hover:rotate-90 transition-transform duration-300"></i> <?= t('kelola_kelas') ?>
+                    <i class="fas fa-plus-circle text-redaccent mr-3 group-hover:rotate-90 transition-transform duration-300"></i> <?= t('manage_class') ?>
                 </button>
             </div>
         </div>
@@ -162,12 +162,12 @@ include 'includes/navbar.php';
         <?php if ($role === 'admin' || $role === 'dosen'): ?>
             <div class="relative z-10 grid grid-cols-1 <?= $role === 'admin' ? 'md:grid-cols-2' : 'md:grid-cols-1' ?> gap-4 mt-6">
                 <div class="bg-darkbg/70 border border-blue-500/30 rounded-2xl p-4">
-                    <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Akun Mahasiswa Terdaftar</p>
+                        <p class="text-xs uppercase tracking-widest text-gray-400 mb-1"><?= t('registered_students') ?></p>
                     <p class="text-3xl font-extrabold text-blue-400"><?= $jumlah_mahasiswa ?></p>
                 </div>
                 <?php if ($role === 'admin'): ?>
                     <div class="bg-darkbg/70 border border-yellow-500/30 rounded-2xl p-4">
-                        <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Akun Dosen Terdaftar</p>
+                        <p class="text-xs uppercase tracking-widest text-gray-400 mb-1"><?= t('registered_lecturers') ?></p>
                         <p class="text-3xl font-extrabold text-yellow-400"><?= $jumlah_dosen ?></p>
                     </div>
                 <?php endif; ?>

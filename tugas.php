@@ -30,7 +30,7 @@ function verifyCSRFToken($token) {
 // =========================================================
 if (isset($_POST['batalkan_pengumpulan']) && $role === 'mahasiswa') {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
     $task_id = (int)$_POST['task_id'];
     
@@ -41,7 +41,7 @@ if (isset($_POST['batalkan_pengumpulan']) && $role === 'mahasiswa') {
     $deadline = $stmt_deadline->get_result()->fetch_assoc()['deadline'];
     $stmt_deadline->close();
     if (strtotime($deadline) < time()) {
-        die("Tidak dapat membatalkan karena sudah melewati deadline.");
+        die(t('deadline_passed_cannot_cancel'));
     }
     
     // Cek apakah sudah ada submission dan belum dinilai (tanpa mengasumsikan kolom `nilai` ada)
@@ -56,10 +56,10 @@ if (isset($_POST['batalkan_pengumpulan']) && $role === 'mahasiswa') {
     $sub = $stmt_sub->get_result()->fetch_assoc();
     $stmt_sub->close();
     if (!$sub) {
-        die("Anda belum mengumpulkan tugas ini.");
+        die(t('submission_not_found'));
     }
     if (array_key_exists('nilai', $sub) && $sub['nilai'] !== null) {
-        die("Tugas sudah dinilai, tidak dapat dibatalkan.");
+        die(t('submission_already_scored'));
     }
     
     // Hapus file fisik
@@ -75,7 +75,7 @@ if (isset($_POST['batalkan_pengumpulan']) && $role === 'mahasiswa') {
     $del->close();
     
     // Notifikasi untuk mahasiswa
-    $desc_mhs = "Anda telah membatalkan pengumpulan tugas (ID: $task_id). Anda dapat mengumpulkan ulang sebelum deadline.";
+    $desc_mhs = t('activity_submission_cancelled_by_you_prefix') . $task_id . t('activity_submission_cancelled_by_you_suffix');
     $stmt_act = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'tugas')");
     $stmt_act->bind_param("is", $user['id'], $desc_mhs);
     $stmt_act->execute();
@@ -86,7 +86,7 @@ if (isset($_POST['batalkan_pengumpulan']) && $role === 'mahasiswa') {
     $stmt_dosen->execute();
     $dosen_id = $stmt_dosen->get_result()->fetch_assoc()['dosen_id'];
     $stmt_dosen->close();
-    $desc_dos = "Mahasiswa " . $user['nama'] . " telah membatalkan pengumpulan tugas (ID: $task_id).";
+    $desc_dos = t('activity_submission_cancelled_by_student_prefix') . $user['nama'] . t('activity_submission_cancelled_by_student_suffix') . $task_id . ').';
     $stmt_act2 = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'tugas')");
     $stmt_act2->bind_param("is", $dosen_id, $desc_dos);
     $stmt_act2->execute();
@@ -100,7 +100,7 @@ if (isset($_POST['batalkan_pengumpulan']) && $role === 'mahasiswa') {
 // =========================================================
 if (isset($_POST['kirim_tugas']) && $role === 'mahasiswa') {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
-        die("CSRF token tidak valid.");
+        die(t('csrf_invalid'));
     }
     $task_id = (int)$_POST['task_id'];
     
@@ -109,7 +109,7 @@ if (isset($_POST['kirim_tugas']) && $role === 'mahasiswa') {
     $stmt_check->bind_param("ii", $task_id, $user['id']);
     $stmt_check->execute();
     if ($stmt_check->get_result()->num_rows > 0) {
-        die("Anda sudah mengumpulkan tugas ini. Batalkan terlebih dahulu jika ingin mengganti file.");
+        die(t('already_submitted'));
     }
     $stmt_check->close();
     
@@ -122,7 +122,7 @@ if (isset($_POST['kirim_tugas']) && $role === 'mahasiswa') {
     $stmt_cek->bind_param("ii", $task_id, $user['id']);
     $stmt_cek->execute();
     if ($stmt_cek->get_result()->num_rows == 0) {
-        die("Anda tidak memiliki akses ke tugas ini.");
+        die(t('need_access_task'));
     }
     $stmt_cek->close();
     
@@ -175,12 +175,12 @@ if (isset($_POST['kirim_tugas']) && $role === 'mahasiswa') {
             $stmt_sub->execute();
             $stmt_sub->close();
             
-            $desc_mhs = "Anda telah mengirimkan tugas: " . htmlspecialchars($judul_tugas) . " (" . htmlspecialchars($nama_kelas) . ")";
+            $desc_mhs = t('activity_task_submitted_by_you_prefix') . htmlspecialchars($judul_tugas) . " (" . htmlspecialchars($nama_kelas) . ")";
             $stmt_act = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'tugas')");
             $stmt_act->bind_param("is", $user['id'], $desc_mhs);
             $stmt_act->execute();
             
-            $desc_dos = "Mahasiswa " . $user['nama'] . " telah mengumpulkan tugas: " . $judul_tugas;
+            $desc_dos = t('activity_task_submitted_by_student_prefix') . $user['nama'] . t('activity_task_submitted_by_student_suffix') . $judul_tugas;
             $stmt_act2 = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'tugas')");
             $stmt_act2->bind_param("is", $dosen_id, $desc_dos);
             $stmt_act2->execute();
@@ -205,12 +205,12 @@ include 'includes/navbar.php';
     <?php if(isset($_GET['pesan'])): ?>
         <?php 
             $msg = ""; $color = "";
-            if($_GET['pesan'] == 'berhasil') { $msg = "Tugas berhasil dikirim!"; $color = "bg-green-500/20 border-green-500 text-green-400"; }
-            if($_GET['pesan'] == 'batal_sukses') { $msg = "Pengumpulan berhasil dibatalkan. Anda dapat mengumpulkan ulang."; $color = "bg-yellow-500/20 border-yellow-500 text-yellow-400"; }
-            if($_GET['pesan'] == 'format_salah') { $msg = "Format ditolak! Harap unggah file PDF atau Word."; $color = "bg-orange-500/20 border-orange-500 text-orange-400"; }
-            if($_GET['pesan'] == 'terlalu_besar') { $msg = "File terlalu besar. Maksimal 5MB."; $color = "bg-red-500/20 border-red-500 text-red-400"; }
-            if($_GET['pesan'] == 'gagal_file') { $msg = "Gagal mengirim. Pastikan Anda memilih file."; $color = "bg-red-500/20 border-red-500 text-red-400"; }
-            if($_GET['pesan'] == 'terlambat') { $msg = "Tugas sudah melewati deadline. Tidak dapat dikumpulkan."; $color = "bg-red-500/20 border-red-500 text-red-400"; }
+            if($_GET['pesan'] == 'berhasil') { $msg = t('submission_saved'); $color = "bg-green-500/20 border-green-500 text-green-400"; }
+            if($_GET['pesan'] == 'batal_sukses') { $msg = t('submission_cancelled'); $color = "bg-yellow-500/20 border-yellow-500 text-yellow-400"; }
+            if($_GET['pesan'] == 'format_salah') { $msg = t('invalid_format'); $color = "bg-orange-500/20 border-orange-500 text-orange-400"; }
+            if($_GET['pesan'] == 'terlalu_besar') { $msg = t('file_too_large'); $color = "bg-red-500/20 border-red-500 text-red-400"; }
+            if($_GET['pesan'] == 'gagal_file') { $msg = t('submit_failed'); $color = "bg-red-500/20 border-red-500 text-red-400"; }
+            if($_GET['pesan'] == 'terlambat') { $msg = t('task_late'); $color = "bg-red-500/20 border-red-500 text-red-400"; }
         ?>
         <div class="mb-6 px-4 py-3 border <?= $color ?> rounded-xl flex items-center justify-between">
             <span><i class="fas fa-info-circle mr-2"></i> <?= htmlspecialchars($msg) ?></span>
@@ -221,13 +221,13 @@ include 'includes/navbar.php';
     <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-800 pb-5 mb-8 gap-4">
         <div class="flex items-center">
             <div class="w-1.5 h-8 bg-blue-500 rounded-full mr-4"></div>
-            <h2 class="text-3xl font-extrabold text-white tracking-wide">Daftar Tugas</h2>
+            <h2 class="text-3xl font-extrabold text-white tracking-wide"><?= t('daftar_tugas') ?></h2>
         </div>
         <?php if($role === 'mahasiswa'): ?>
         <form method="GET" action="" class="flex items-center bg-darkbg border border-gray-700 rounded-xl px-3 py-1">
             <i class="fas fa-filter text-gray-500 mr-2 text-xs"></i>
             <select name="filter_kelas" onchange="this.form.submit()" class="bg-transparent text-gray-300 text-sm focus:outline-none py-2 cursor-pointer">
-                <option value="">Semua Kelas</option>
+                <option value=""><?= t('all_classes') ?></option>
                 <?php
                 $stmt_filter = $conn->prepare("SELECT c.id, c.nama_kelas FROM classes c JOIN class_members cm ON c.id = cm.class_id WHERE cm.mahasiswa_id = ?");
                 $stmt_filter->bind_param("i", $user['id']);
@@ -314,21 +314,21 @@ include 'includes/navbar.php';
                 <div class="flex flex-col md:flex-row justify-between items-start border-b border-gray-800 pb-4 mb-4 gap-4">
                     <div>
                         <h3 class="text-xl font-bold text-white"><?= htmlspecialchars($t['judul']) ?></h3>
-                        <p class="text-sm text-gray-400 mt-1"><?= htmlspecialchars($t['nama_kelas']) ?> • Dosen: <?= htmlspecialchars($t['dosen']) ?></p>
+                                <p class="text-sm text-gray-400 mt-1"><?= htmlspecialchars($t['nama_kelas']) ?> • <?= t('lecturer_label') ?>: <?= htmlspecialchars($t['dosen']) ?></p>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">
                         <?php if ($is_expired): ?>
                             <span class="px-3 py-1 bg-red-500/10 text-red-400 border border-red-500/50 text-xs font-bold rounded-lg">
-                                <i class="fas fa-clock mr-1.5"></i> Tenggat: <?= date('d M Y, H:i', $deadline_time) ?>
+                                <i class="fas fa-clock mr-1.5"></i> <?= t('deadline_label') ?>: <?= date('d M Y, H:i', $deadline_time) ?>
                             </span>
                         <?php else: ?>
                             <span class="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/50 text-xs font-bold rounded-lg">
-                                <i class="fas fa-clock mr-1.5"></i> Tenggat: <?= date('d M Y, H:i', $deadline_time) ?>
+                                <i class="fas fa-clock mr-1.5"></i> <?= t('deadline_label') ?>: <?= date('d M Y, H:i', $deadline_time) ?>
                             </span>
                         <?php endif; ?>
                         <?php if ($role === 'dosen' && $t['dosen_id'] == $user['id']): ?>
                             <a href="lihat_pengumpulan.php?task_id=<?= $t['id'] ?>" class="text-xs bg-green-600 hover:bg-green-500 px-2 py-1 rounded text-white whitespace-nowrap">
-                                <i class="fas fa-eye mr-1"></i> Lihat Pengumpulan
+                                <i class="fas fa-eye mr-1"></i> <?= t('view_submissions') ?>
                             </a>
                         <?php endif; ?>
                     </div>
@@ -340,16 +340,16 @@ include 'includes/navbar.php';
                         <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-3 mb-4">
                             <p class="text-green-400 text-sm">
                                 <i class="fas fa-check-circle mr-2"></i> 
-                                Anda sudah mengumpulkan tugas ini pada <?= date('d M Y, H:i', strtotime($submission['submitted_at'])) ?>.
+                                <?= t('submitted_on') ?> <?= date('d M Y, H:i', strtotime($submission['submitted_at'])) ?>.
                             </p>
                         </div>
                         <?php if ((array_key_exists('nilai', $submission) && $submission['nilai'] !== null) || (array_key_exists('feedback', $submission) && !empty($submission['feedback']))): ?>
                             <div class="mt-4 p-3 bg-darkbg border border-gray-700 rounded-lg">
                                 <?php if (array_key_exists('nilai', $submission) && $submission['nilai'] !== null): ?>
-                                    <p class="text-sm"><span class="font-bold text-yellow-400">Nilai:</span> <span class="text-white"><?= htmlspecialchars($submission['nilai']) ?></span></p>
+                                    <p class="text-sm"><span class="font-bold text-yellow-400"><?= t('score') ?>:</span> <span class="text-white"><?= htmlspecialchars($submission['nilai']) ?></span></p>
                                 <?php endif; ?>
                                 <?php if (array_key_exists('feedback', $submission) && !empty($submission['feedback'])): ?>
-                                    <p class="text-sm mt-1"><span class="font-bold text-blue-400">Feedback:</span> <span class="text-gray-300"><?= nl2br(htmlspecialchars($submission['feedback'])) ?></span></p>
+                                    <p class="text-sm mt-1"><span class="font-bold text-blue-400"><?= t('feedback') ?>:</span> <span class="text-gray-300"><?= nl2br(htmlspecialchars($submission['feedback'])) ?></span></p>
                                 <?php endif; ?>
                             </div>
                         <?php endif; ?>
@@ -358,18 +358,18 @@ include 'includes/navbar.php';
                             <form method="POST" class="mt-4">
                                 <input type="hidden" name="task_id" value="<?= $t['id'] ?>">
                                 <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
-                                <button type="submit" name="batalkan_pengumpulan" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-bold rounded-xl transition" onclick="return confirm('Yakin ingin membatalkan pengumpulan? File akan dihapus dan Anda dapat mengumpulkan ulang.')">
-                                    <i class="fas fa-trash-alt mr-2"></i> Batalkan Pengumpulan
+                                <button type="submit" name="batalkan_pengumpulan" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-bold rounded-xl transition" onclick="return confirm('<?= t('cancel_submission_confirm') ?>')">
+                                    <i class="fas fa-trash-alt mr-2"></i> <?= t('cancel_submission') ?>
                                 </button>
                             </form>
                         <?php elseif ($submission['nilai'] !== null): ?>
-                            <p class="text-gray-400 text-xs mt-2"><i class="fas fa-info-circle"></i> Tugas sudah dinilai, tidak dapat dibatalkan.</p>
+                            <p class="text-gray-400 text-xs mt-2"><i class="fas fa-info-circle"></i> <?= t('submission_already_scored') ?></p>
                         <?php elseif ($is_expired): ?>
-                            <p class="text-gray-400 text-xs mt-2"><i class="fas fa-clock"></i> Deadline sudah lewat, tidak dapat membatalkan.</p>
+                            <p class="text-gray-400 text-xs mt-2"><i class="fas fa-clock"></i> <?= t('deadline_passed_cannot_cancel') ?></p>
                         <?php endif; ?>
                         
                     <?php elseif ($is_expired): ?>
-                        <p class="text-red-400 text-sm"><i class="fas fa-ban"></i> Tugas sudah melewati deadline. Tidak dapat mengumpulkan.</p>
+                        <p class="text-red-400 text-sm"><i class="fas fa-ban"></i> <?= t('task_late') ?></p>
                     <?php else: ?>
                         <form action="" method="POST" enctype="multipart/form-data" class="mt-4">
                             <input type="hidden" name="task_id" value="<?= $t['id'] ?>">
@@ -378,12 +378,12 @@ include 'includes/navbar.php';
                                 <input type="file" name="file_tugas" accept=".pdf,.doc,.docx" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                                 <div class="border-2 border-dashed border-gray-700 bg-darkbg rounded-xl p-6 text-center group-hover:border-blue-500 transition">
                                     <i class="fas fa-cloud-upload-alt text-3xl text-gray-600 mb-2 group-hover:text-blue-500"></i>
-                                    <p class="text-xs text-gray-400">Klik untuk memilih file <span class="text-blue-400 font-bold">PDF/Word</span></p>
-                                    <p id="file-name-<?= $t['id'] ?>" class="text-[10px] text-gray-500 mt-1 italic">Belum ada file dipilih</p>
+                                    <p class="text-xs text-gray-400"><?= t('choose_file') ?> <span class="text-blue-400 font-bold"><?= t('pdf_word') ?></span></p>
+                                    <p id="file-name-<?= $t['id'] ?>" class="text-[10px] text-gray-500 mt-1 italic"><?= t('no_file_selected') ?></p>
                                 </div>
                             </div>
                             <div class="mt-4 flex justify-end">
-                                <button type="submit" name="kirim_tugas" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition">Kirim Tugas</button>
+                                <button type="submit" name="kirim_tugas" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition"><?= t('kirim_tugas') ?></button>
                             </div>
                         </form>
                     <?php endif; ?>
@@ -392,7 +392,7 @@ include 'includes/navbar.php';
         <?php endwhile; else: ?>
             <div class="bg-surface border border-dashed border-gray-700 rounded-2xl p-16 text-center">
                 <i class="fas fa-clipboard-list text-4xl text-gray-700 mb-3"></i>
-                <p class="text-gray-400">Tidak ada tugas ditemukan.</p>
+                <p class="text-gray-400"><?= t('no_tasks_found') ?></p>
             </div>
         <?php endif; ?>
     </div>

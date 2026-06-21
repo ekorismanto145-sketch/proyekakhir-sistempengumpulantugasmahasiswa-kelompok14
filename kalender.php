@@ -1,5 +1,6 @@
 <?php 
 include 'includes/db.php'; 
+include 'includes/lang.php';
 if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
 
 $user = $_SESSION['user']; 
@@ -54,38 +55,38 @@ include 'includes/navbar.php';
     <!-- Header Halaman -->
     <div class="flex items-center border-b border-gray-800 pb-4 mb-6">
         <div class="w-1.5 h-7 bg-blue-500 rounded-full mr-3 shadow-[0_0_10px_rgba(59,130,246,0.6)]"></div>
-        <h2 class="text-2xl font-extrabold text-white tracking-wide">Kalender Akademik</h2>
+        <h2 class="text-2xl font-extrabold text-white tracking-wide"><?= t('calendar_academic') ?></h2>
     </div>
 
     <!-- Container Kalender (Ukurannya sudah diperkecil) -->
     <div class="bg-surface border border-gray-800 rounded-3xl p-5 md:p-6 shadow-2xl transition-colors">
         <?php if ($role === 'admin'): ?>
         <div class="mb-4 p-4 bg-darkbg border border-gray-700 rounded-lg">
-            <h4 class="text-sm font-bold text-white mb-2">Kelola Tanggal Merah (Libur)</h4>
+            <h4 class="text-sm font-bold text-white mb-2"><?= t('manage_holidays') ?></h4>
             <form method="POST" class="flex gap-2 flex-col md:flex-row items-start md:items-end">
                 <div>
-                    <label class="text-xs text-gray-400">Tanggal</label>
+                    <label class="text-xs text-gray-400"><?= t('date_label') ?></label>
                     <input type="date" name="holiday_date" class="bg-darkbg border border-gray-700 px-3 py-2 rounded" required>
                 </div>
                 <div>
-                    <label class="text-xs text-gray-400">Judul</label>
-                    <input type="text" name="title" class="bg-darkbg border border-gray-700 px-3 py-2 rounded" placeholder="Mis: Libur Nasional">
+                    <label class="text-xs text-gray-400"><?= t('title_label') ?></label>
+                    <input type="text" name="title" class="bg-darkbg border border-gray-700 px-3 py-2 rounded" placeholder="<?= t('holiday_title_placeholder') ?>">
                 </div>
                 <div class="flex-1">
-                    <label class="text-xs text-gray-400">Keterangan</label>
-                    <input type="text" name="description" class="w-full bg-darkbg border border-gray-700 px-3 py-2 rounded" placeholder="Keterangan singkat">
+                    <label class="text-xs text-gray-400"><?= t('description_label') ?></label>
+                    <input type="text" name="description" class="w-full bg-darkbg border border-gray-700 px-3 py-2 rounded" placeholder="<?= t('holiday_desc_placeholder') ?>">
                 </div>
                 <div>
-                    <button type="submit" name="add_holiday" class="px-4 py-2 bg-redaccent text-white rounded">Simpan</button>
+                    <button type="submit" name="add_holiday" class="px-4 py-2 bg-redaccent text-white rounded"><?= t('save') ?></button>
                 </div>
             </form>
             <?php if (!empty($holidays)): ?>
                 <div class="mt-3 text-xs text-gray-400">
-                    <strong>Daftar Tanggal Merah:</strong>
+                    <strong><?= t('holiday_list') ?>:</strong>
                     <ul>
                         <?php foreach($holidays as $hd => $meta): ?>
                             <li class="mt-1"><?= htmlspecialchars($hd) ?> - <?= htmlspecialchars($meta['title'] ?? '-') ?>
-                                <form method="POST" style="display:inline-block;margin-left:8px;"><input type="hidden" name="holiday_id" value="<?= $meta['id'] ?>"><button type="submit" name="delete_holiday" class="text-xs text-red-400">hapus</button></form>
+                                <form method="POST" style="display:inline-block;margin-left:8px;"><input type="hidden" name="holiday_id" value="<?= $meta['id'] ?>"><button type="submit" name="delete_holiday" class="text-xs text-red-400"><?= t('delete') ?></button></form>
                             </li>
                         <?php endforeach; ?>
                     </ul>
@@ -116,13 +117,13 @@ include 'includes/navbar.php';
 
         <!-- Grid Nama Hari -->
         <div class="grid grid-cols-7 gap-1 md:gap-2 mb-3 text-center font-bold text-[10px] md:text-xs uppercase tracking-wider">
-            <div class="text-redaccent py-1">Min</div>
-            <div class="text-gray-400 py-1">Sen</div>
-            <div class="text-gray-400 py-1">Sel</div>
-            <div class="text-gray-400 py-1">Rab</div>
-            <div class="text-gray-400 py-1">Kam</div>
-            <div class="text-gray-400 py-1">Jum</div>
-            <div class="text-gray-400 py-1">Sab</div>
+            <div class="text-redaccent py-1"><?= t('sun_short') ?></div>
+            <div class="text-gray-400 py-1"><?= t('mon_short') ?></div>
+            <div class="text-gray-400 py-1"><?= t('tue_short') ?></div>
+            <div class="text-gray-400 py-1"><?= t('wed_short') ?></div>
+            <div class="text-gray-400 py-1"><?= t('thu_short') ?></div>
+            <div class="text-gray-400 py-1"><?= t('fri_short') ?></div>
+            <div class="text-gray-400 py-1"><?= t('sat_short') ?></div>
         </div>
 
         <!-- Grid Tanggal -->
@@ -134,7 +135,9 @@ include 'includes/navbar.php';
 </main>
 
 <script>
-    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    const monthNames = <?= json_encode($_SESSION['lang'] === 'en'
+        ? ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        : ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]) ?>;
     
     // Ambil waktu saat ini
     let date = new Date();
@@ -208,7 +211,7 @@ include 'includes/navbar.php';
             }
 
             if (hol) {
-                const holidayTitle = hol.title ? escapeHtml(hol.title) : 'Libur';
+                const holidayTitle = hol.title ? escapeHtml(hol.title) : '<?= t('holiday_default_title') ?>';
                 const holidayDesc = hol.description ? escapeHtml(hol.description) : '';
                 dayDiv.title = `${hol.title ? hol.title + ' - ' : ''}${hol.description || ''}`;
                 dayDiv.innerHTML = `

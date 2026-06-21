@@ -1,9 +1,10 @@
 <?php
 include 'includes/db.php';
+include 'includes/lang.php';
 if (!isset($_SESSION['user'])) { header('Location: login.php'); exit(); }
 $user = $_SESSION['user'];
 $role = $user['role'] ?? '';
-if ($role !== 'dosen' && $role !== 'admin') { die('Akses ditolak.'); }
+if ($role !== 'dosen' && $role !== 'admin') { die(t('access_denied')); }
 
 // Ambil kelas yang diajarkan dosen
 $dosen_id = $user['id'];
@@ -65,44 +66,44 @@ include 'includes/navbar.php';
 ?>
 <main class="max-w-4xl mx-auto p-4 sm:p-6 md:p-10">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-        <h2 class="text-xl sm:text-2xl font-bold text-white">Rekap Nilai</h2>
+        <h2 class="text-xl sm:text-2xl font-bold text-white"><?= t('rekap_nilai') ?></h2>
         <?php if($selected_class && $class_info): ?>
-            <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded w-full sm:w-auto">Cetak PDF</button>
+            <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded w-full sm:w-auto"><?= t('print_pdf') ?></button>
         <?php endif; ?>
     </div>
 
     <form method="GET" class="mb-6">
-        <label class="text-sm text-gray-400">Pilih Kelas</label>
+        <label class="text-sm text-gray-400"><?= t('choose_class') ?></label>
         <div class="flex flex-col sm:flex-row gap-3 mt-2">
             <select name="class_id" class="bg-darkbg border border-gray-700 text-white px-3 py-2 rounded w-full sm:w-auto">
-                <option value="">-- Pilih Kelas --</option>
+                <option value="">-- <?= t('choose_class') ?> --</option>
                 <?php while($k = $kelas_list->fetch_assoc()): ?>
                     <option value="<?= $k['id'] ?>" <?= ($selected_class == $k['id']) ? 'selected' : '' ?>><?= htmlspecialchars($k['nama_kelas']) ?></option>
                 <?php endwhile; ?>
             </select>
-            <button class="px-4 py-2 bg-blue-600 text-white rounded w-full sm:w-auto">Tampilkan</button>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded w-full sm:w-auto"><?= t('show') ?></button>
         </div>
     </form>
 
     <?php if ($selected_class && $class_info): ?>
         <div class="bg-surface border border-gray-800 rounded-lg p-6">
             <h3 class="text-lg font-bold text-white mb-2"><?= htmlspecialchars($class_info['nama_kelas']) ?></h3>
-            <p class="text-sm text-gray-400 mb-4">Mata Kuliah / Deskripsi: <?= nl2br(htmlspecialchars($class_info['deskripsi'])) ?></p>
+            <p class="text-sm text-gray-400 mb-4"><?= t('class_description_label') ?>: <?= nl2br(htmlspecialchars($class_info['deskripsi'])) ?></p>
 
             <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse min-w-[900px]">
                 <thead>
                     <tr class="text-sm text-gray-400 border-b border-gray-700">
                         <th class="py-2 px-3">No</th>
-                        <th class="py-2 px-3">Nama Mahasiswa</th>
+                        <th class="py-2 px-3"><?= t('mahasiswa_role') ?></th>
                         <th class="py-2 px-3">Email</th>
-                        <th class="py-2 px-3">Nilai per Mata Kuliah</th>
-                        <th class="py-2 px-3">Rata-rata Nilai</th>
+                        <th class="py-2 px-3"><?= t('per_task_grade') ?></th>
+                        <th class="py-2 px-3"><?= t('average_grade') ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php $no=1; if (count($students) == 0): ?>
-                        <tr><td colspan="5" class="py-6 text-center text-gray-500">Belum ada mahasiswa terdaftar.</td></tr>
+                        <tr><td colspan="5" class="py-6 text-center text-gray-500"><?= t('no_registered_students') ?></td></tr>
                     <?php else: foreach($students as $st): ?>
                         <tr class="border-b border-gray-800">
                             <td class="py-2 px-3 text-sm text-gray-300"><?= $no++ ?></td>
@@ -131,7 +132,7 @@ include 'includes/navbar.php';
             </table>
             </div>
         </div>
-        <p class="text-xs text-gray-500 mt-3">Gunakan tombol "Cetak PDF" untuk menyimpan sebagai PDF (fitur browser Print to PDF).</p>
+        <p class="text-xs text-gray-500 mt-3"><?= t('use_print_pdf') ?></p>
     <?php endif; ?>
 </main>
 <style>

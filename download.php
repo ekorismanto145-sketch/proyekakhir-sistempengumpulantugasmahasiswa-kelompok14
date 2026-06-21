@@ -1,5 +1,6 @@
 <?php
 include 'includes/db.php';
+include 'includes/lang.php';
 if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
 $user = $_SESSION['user'];
 $role = $user['role'];
@@ -7,12 +8,12 @@ $role = $user['role'];
 $submission_id = (int)$_GET['submission_id'];
 $token = $_GET['token'] ?? '';
 if ($submission_id <= 0 || empty($token)) {
-    die("Parameter tidak valid.");
+    die(t('invalid_parameter'));
 }
 
 $expected_token = md5($submission_id . $user['id'] . 'secret_key');
 if (!hash_equals($expected_token, $token)) {
-    die("Token tidak valid.");
+    die(t('invalid_token'));
 }
 
 $stmt = $conn->prepare("
@@ -28,19 +29,19 @@ $sub = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$sub) {
-    die("Data submission tidak ditemukan.");
+    die(t('submission_data_not_found'));
 }
 
 if ($role === 'dosen' && $sub['dosen_id'] != $user['id']) {
-    die("Akses ditolak. Anda bukan dosen pengampu kelas ini.");
+    die(t('access_denied_lecturer'));
 }
 if ($role !== 'admin' && $role !== 'dosen') {
-    die("Akses ditolak.");
+    die(t('access_denied'));
 }
 
 $full_path = __DIR__ . '/' . $sub['file_path'];
 if (!file_exists($full_path)) {
-    die("File tidak ditemukan di server.");
+    die(t('file_not_found_server'));
 }
 
 header('Content-Type: application/octet-stream');
