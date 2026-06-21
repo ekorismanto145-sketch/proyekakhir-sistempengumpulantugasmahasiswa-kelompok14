@@ -1,6 +1,7 @@
 <?php
 include 'includes/db.php';
 include 'includes/lang.php';
+include 'includes/audit.php';
 if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
 $user = $_SESSION['user'];
 $role = $user['role'];
@@ -45,6 +46,12 @@ if ($role === 'dosen' && $task['dosen_id'] != $user['id']) {
     die(t('access_denied_lecturer'));
 }
 
+function isAdminOverrideAction($role, $post, $action_key) {
+    return $role === 'admin'
+        && !empty($post[$action_key])
+        && trim($post['override_reason'] ?? '') !== '';
+}
+
 // Proses hapus pengumpulan tugas mahasiswa (dosen/admin)
 if (isset($_POST['hapus_pengumpulan'])) {
     if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
@@ -53,6 +60,12 @@ if (isset($_POST['hapus_pengumpulan'])) {
 
     $submission_id = (int)($_POST['submission_id'] ?? 0);
     if ($submission_id <= 0) {
+        header("Location: lihat_pengumpulan.php?task_id=$task_id&pesan=hapus_gagal");
+        exit();
+    }
+
+    $is_override = isAdminOverrideAction($role, $_POST, 'admin_override_delete');
+    if ($role === 'admin' && !$is_override) {
         header("Location: lihat_pengumpulan.php?task_id=$task_id&pesan=hapus_gagal");
         exit();
     }
@@ -79,6 +92,17 @@ if (isset($_POST['hapus_pengumpulan'])) {
     $del->close();
 
     if ($deleted) {
+        if ($is_override) {
+            logSecurityOverride(
+                $conn,
+                (int)$user['id'],
+                $role,
+                'delete_submission',
+                'task_submissions',
+                (string)$submission_id,
+                trim($_POST['override_reason'])
+            );
+        }
         $desc_hapus = "Pengumpulan tugas '" . $task['judul'] . "' telah dihapus oleh dosen/admin. Silakan unggah ulang jika diminta.";
         $ins_hapus = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) VALUES (?, ?, 'tugas')");
         $ins_hapus->bind_param("is", $submission['mahasiswa_id'], $desc_hapus);
@@ -102,6 +126,11 @@ if (isset($_POST['simpan_nilai'])) {
     $submission_id = (int)$_POST['submission_id'];
     $nilai = !empty($_POST['nilai']) ? (int)$_POST['nilai'] : null;
     $feedback = trim($_POST['feedback'] ?? '');
+    $is_override = isAdminOverrideAction($role, $_POST, 'admin_override_grade');
+    if ($role === 'admin' && !$is_override) {
+        header("Location: lihat_pengumpulan.php?task_id=$task_id&pesan=hapus_gagal");
+        exit();
+    }
     
     if ($nilai !== null && ($nilai < 0 || $nilai > 100)) {
         die(t('grade_must_be_between'));
@@ -135,6 +164,18 @@ if (isset($_POST['simpan_nilai'])) {
     $update->bind_param("isi", $nilai, $feedback, $submission_id);
     $update->execute();
     $update->close();
+
+    if ($is_override) {
+        logSecurityOverride(
+            $conn,
+            (int)$user['id'],
+            $role,
+            'grade_submission',
+            'task_submissions',
+            (string)$submission_id,
+            trim($_POST['override_reason'])
+        );
+    }
     
     // Notifikasi ke mahasiswa
     $desc = "Dosen telah memberikan nilai untuk tugas '" . $task['judul'] . "'. Nilai: " . ($nilai ?? 'Belum ada nilai');
@@ -228,6 +269,15 @@ include 'includes/navbar.php';
                                 <input type="text" name="feedback" value="<?= htmlspecialchars($row['feedback'] ?? '') ?>" 
                                        placeholder="<?= t('feedback') ?>..." 
                                        class="w-48 bg-darkbg border border-gray-700 text-white px-2 py-1 rounded text-sm">
+                                <?php if ($role === 'admin'): ?>
+                                    <div class="mt-2 space-y-2">
+                                        <label class="flex items-center gap-2 text-[11px] text-gray-400">
+                                            <input type="checkbox" name="admin_override_grade" value="1" class="rounded border-gray-600 bg-darkbg">
+                                            <span>Override admin</span>
+                                        </label>
+                                        <input type="text" name="override_reason" placeholder="Alasan override" class="w-48 bg-darkbg border border-gray-700 text-white px-2 py-1 rounded text-xs">
+                                    </div>
+                                <?php endif; ?>
                             </td>
                             <td class="px-6 py-4">
                                 <button type="submit" name="simpan_nilai" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-white text-xs mr-2">
@@ -236,6 +286,9 @@ include 'includes/navbar.php';
                                 <button type="submit" name="hapus_pengumpulan" onclick="return confirm('<?= t('delete_submission_confirm') ?>');" class="px-3 py-1 bg-red-600 hover:bg-red-500 rounded text-white text-xs">
                                     <i class="fas fa-trash-alt mr-1"></i> <?= t('delete') ?>
                                 </button>
+                                <?php if ($role === 'admin'): ?>
+                                    <input type="hidden" name="admin_override_delete" value="1">
+                                <?php endif; ?>
                             </td>
                         </form>
                     </tr>

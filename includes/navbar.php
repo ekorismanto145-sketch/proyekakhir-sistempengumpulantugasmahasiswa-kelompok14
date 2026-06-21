@@ -83,9 +83,7 @@ if (isset($_SESSION['user']['foto_profil']) && !empty($_SESSION['user']['foto_pr
             <?php endif; ?>
 
             <a href="settings.php" class="flex items-center p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition"><i class="fas fa-cog mr-3 w-5 text-center"></i> <?= t('setelan') ?></a>
-            <?php if ($current_role !== 'admin'): ?>
-                <a href="bantuan.php" class="flex items-center p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition"><i class="fas fa-question-circle mr-3 w-5 text-center"></i> <?= t('bantuan') ?></a>
-            <?php endif; ?>
+            <a href="bantuan.php" class="flex items-center p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition"><i class="fas fa-question-circle mr-3 w-5 text-center"></i> <?= t('bantuan') ?></a>
             <?php if ($current_role === 'admin'): ?>
                 <a href="kalender.php" class="flex items-center p-3 hover:bg-gray-800 rounded-xl text-gray-300 hover:text-white transition"><i class="fas fa-calendar-day mr-3 w-5 text-center"></i> <?= t('kelola_kalender') ?></a>
             <?php endif; ?>

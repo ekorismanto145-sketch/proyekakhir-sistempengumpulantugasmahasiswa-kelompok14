@@ -478,6 +478,15 @@ include 'includes/navbar.php';
                 <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><?= t('deadline_new') ?></label>
                 <input type="datetime-local" name="deadline" id="deadline_date" min="<?= date('Y-m-d\\TH:i') ?>" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:border-yellow-500 transition" required>
             </div>
+            <?php if ($role === 'admin'): ?>
+                <div class="space-y-2">
+                    <label class="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <input type="checkbox" name="admin_override_deadline" value="1" class="rounded border-gray-600 bg-darkbg">
+                        <span>Aktifkan override admin</span>
+                    </label>
+                    <input type="text" name="override_reason" placeholder="Alasan override" class="w-full bg-darkbg border border-gray-700 text-white px-4 py-3 rounded-xl focus:border-yellow-500 transition text-sm">
+                </div>
+            <?php endif; ?>
             <div class="flex justify-end gap-3 pt-3">
                 <button type="button" onclick="closeDeadlineModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white"><?= t('batal') ?></button>
                 <button type="submit" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold"><?= t('simpan_perubahan') ?></button>

@@ -1,18 +1,14 @@
 <?php 
 include 'includes/db.php'; 
 include 'includes/lang.php';
+include 'includes/audit.php';
 if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
 
 $user = $_SESSION['user']; 
 $role = $user['role'];
 
-if ($role === 'admin') {
-    header("Location: notifikasi.php");
-    exit();
-}
-
 // Proses kirim keluhan
-if (isset($_POST['kirim_keluhan'])) {
+if (isset($_POST['kirim_keluhan']) && in_array($role, ['mahasiswa', 'dosen', 'admin'], true)) {
     $pesan = trim($_POST['pesan']);
     if (!empty($pesan)) {
         $stmt = $conn->prepare("INSERT INTO reports (user_id, user_nama, user_role, pesan) VALUES (?, ?, ?, ?)");
@@ -42,6 +38,9 @@ if (isset($_POST['kirim_keluhan'])) {
         header("Location: bantuan.php?pesan=gagal");
         exit();
     }
+} elseif (isset($_POST['kirim_keluhan'])) {
+    header("Location: login.php");
+    exit();
 }
 
 include 'includes/header.php'; 

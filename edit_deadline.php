@@ -1,6 +1,7 @@
 <?php
 include 'includes/db.php';
 include 'includes/lang.php';
+include 'includes/audit.php';
 if (!isset($_SESSION['user'])) { header("Location: login.php"); exit(); }
 $user = $_SESSION['user'];
 $role = $user['role'];
@@ -39,6 +40,10 @@ if (!$task) {
 if ($role === 'dosen' && $task['dosen_id'] != $user['id']) {
     die(t('access_denied_lecturer'));
 }
+if ($role === 'admin' && (trim($_POST['override_reason'] ?? '') === '' || empty($_POST['admin_override_deadline']))) {
+    header("Location: detail_kelas.php?id=" . $task['class_id'] . "&pesan=deadline_invalid");
+    exit();
+}
 
 if ($new_deadline_ts < time()) {
     header("Location: detail_kelas.php?id=" . $task['class_id'] . "&pesan=deadline_invalid");
@@ -71,6 +76,18 @@ $ins_dosen = $conn->prepare("INSERT INTO activities (user_id, deskripsi, tipe) V
 $ins_dosen->bind_param("is", $user['id'], $desc_dosen);
 $ins_dosen->execute();
 $ins_dosen->close();
+
+if ($role === 'admin') {
+    logSecurityOverride(
+        $conn,
+        (int)$user['id'],
+        $role,
+        'update_deadline',
+        'tasks',
+        (string)$task_id,
+        trim($_POST['override_reason'] ?? '')
+    );
+}
 
 header("Location: detail_kelas.php?id=" . $task['class_id'] . "&pesan=deadline_updated");
 exit;
