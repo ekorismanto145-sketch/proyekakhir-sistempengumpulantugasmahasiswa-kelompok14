@@ -28,7 +28,22 @@ if (isset($_POST['action_buat']) && ($role === 'dosen' || $role === 'admin')) {
     $nama_kelas = trim($_POST['nama_kelas']);
     $matpel = trim($_POST['mata_pelajaran']);
     $ruang = trim($_POST['ruang']);
+    $nama_dosen = trim($_POST['nama_dosen'] ?? '');
     $dosen_id = $user_id;
+
+    // Admin boleh membuat kelas untuk dosen lain.
+    // Jika field dosen diisi, cari berdasarkan nama atau email agar kelas masuk ke dashboard dosen yang tepat.
+    if ($role === 'admin' && $nama_dosen !== '') {
+        $stmt_dosen = $conn->prepare("SELECT id FROM users WHERE role = 'dosen' AND (nama = ? OR email = ?) LIMIT 1");
+        $stmt_dosen->bind_param("ss", $nama_dosen, $nama_dosen);
+        $stmt_dosen->execute();
+        $res_dosen = $stmt_dosen->get_result();
+        if ($res_dosen && $res_dosen->num_rows > 0) {
+            $dosen_id = (int) $res_dosen->fetch_assoc()['id'];
+        }
+        $stmt_dosen->close();
+    }
+
     $kode_kelas = strtoupper(substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 7));
     $deskripsi = "$matpel - $ruang";
 
