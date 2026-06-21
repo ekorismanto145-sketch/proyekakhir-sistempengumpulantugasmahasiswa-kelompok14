@@ -29,4 +29,14 @@ if (!$conn) {
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+if (isset($_GET['toggle_lang'])) {
+    $new_lang = $_GET['toggle_lang'];
+    if (in_array($new_lang, ['id', 'en'], true)) {
+        $_SESSION['lang'] = $new_lang;
+    }
+    $redirect_url = strtok($_SERVER['REQUEST_URI'], '?');
+    header('Location: ' . $redirect_url);
+    exit();
+}
 ?>

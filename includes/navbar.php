@@ -11,21 +11,15 @@ if (isset($_GET['switch_role'])) {
     if ($_SESSION['user']['original_role'] === 'admin') {
         if (in_array($new_role, ['admin', 'dosen', 'mahasiswa'])) {
             $_SESSION['user']['role'] = $new_role;
-            header("Location: " . strtok($_SERVER["REQUEST_URI"], '?'));
+            $redirect_url = strtok($_SERVER["REQUEST_URI"], '?');
+            if (!headers_sent()) {
+                header("Location: " . $redirect_url);
+            } else {
+                echo '<script>window.location.replace(' . json_encode($redirect_url) . ');</script>';
+            }
             exit();
         }
     }
-}
-
-// Toggle bahasa
-if (isset($_GET['toggle_lang'])) {
-    $new_lang = $_GET['toggle_lang'];
-    if (in_array($new_lang, ['id', 'en'])) {
-        $_SESSION['lang'] = $new_lang;
-    }
-    $url = strtok($_SERVER["REQUEST_URI"], '?');
-    header("Location: $url");
-    exit();
 }
 
 // Avatar
