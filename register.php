@@ -58,9 +58,17 @@ function verifyCSRFToken($token) {
             border: 1px solid rgba(221, 212, 195, 0.18);
             color: #f8fafc;
         }
+        select option {
+            background: #0f172a;
+            color: #f8fafc;
+        }
         html.light-mode input, html.light-mode select {
             background: rgba(255, 250, 241, 0.98);
             border: 1px solid rgba(210, 198, 179, 0.9);
+            color: #0f172a;
+        }
+        html.light-mode select option {
+            background: #fffaf1;
             color: #0f172a;
         }
         html.light-mode input::placeholder {
